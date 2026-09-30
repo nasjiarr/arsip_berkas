@@ -53,14 +53,14 @@ try {
                 }
             }
         }
-        $_SESSION['success'] = "Data berhasil dihapus.";
+        set_flash_message('success', 'Data disposisi masuk berhasil dihapus.');
     } else {
-        $_SESSION['error'] = "Gagal menghapus data.";
+        set_flash_message('danger', 'Gagal menghapus data.');
     }
 } catch (PDOException $e) {
-    $_SESSION['error'] = "Terjadi kesalahan saat menghapus data.";
+    set_flash_message('danger', 'Terjadi kesalahan saat menghapus data.');
 } catch (Exception $e) {
-    $_SESSION['error'] = "Terjadi kesalahan saat menghapus file.";
+    set_flash_message('danger', 'Terjadi kesalahan saat menghapus file.');
 }
 
 header("Location: disposisi.php");

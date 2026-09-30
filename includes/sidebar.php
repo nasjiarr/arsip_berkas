@@ -95,6 +95,12 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
     </div>
 </div>
 
+<?php
+if (function_exists('render_flash_toast')) {
+    render_flash_toast();
+}
+?>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.getElementById('sidebar');

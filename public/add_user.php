@@ -35,9 +35,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user'])) {
         $stmt->bindParam(':password', $hashed_password, PDO::PARAM_STR);
         $stmt->bindParam(':role', $new_user_role, PDO::PARAM_STR);
         $stmt->execute();
-        $message = "User berhasil ditambahkan!";
+        set_flash_message('success', 'User ' . htmlspecialchars($username) . ' berhasil ditambahkan!');
+        header("Location: add_user.php");
+        exit();
     } catch (PDOException $e) {
-        $message = "Terjadi kesalahan: " . $e->getMessage();
+        set_flash_message('danger', 'Terjadi kesalahan: ' . $e->getMessage());
+        header("Location: add_user.php");
+        exit();
     }
 }
 
@@ -49,21 +53,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user'])) {
 
     $id = (int)($_POST['id'] ?? 0);
     if ($id <= 0) {
-        $message = "ID user tidak valid.";
+        set_flash_message('danger', 'ID user tidak valid.');
     } elseif ($id === (int)($_SESSION['user']['id'] ?? 0)) {
-        $message = "Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.";
+        set_flash_message('warning', 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.');
     } else {
         try {
             $query = "DELETE FROM users WHERE id = :id";
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
-            header("Location: add_user.php");
-            exit();
+            set_flash_message('success', 'User berhasil dihapus.');
         } catch (PDOException $e) {
-            $message = "Gagal menghapus user: " . $e->getMessage();
+            set_flash_message('danger', 'Gagal menghapus user: ' . $e->getMessage());
         }
     }
+    header("Location: add_user.php");
+    exit();
 }
 
 // Ambil daftar user dari database
@@ -90,10 +95,6 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="content">
         <div class="container-fluid">
             <h2 class="mb-4">Kelola User</h2>
-
-            <?php if (isset($message)): ?>
-                <div class="alert alert-info mb-4"><?php echo $message; ?></div>
-            <?php endif; ?>
 
             <div class="row">
                 <div class="col-12 col-lg-6 mb-4">

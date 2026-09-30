@@ -98,6 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         ]);
 
         $pdo->commit();
+        set_flash_message('success', 'Data disposisi masuk berhasil ditambahkan.');
         header("Location: disposisi.php");
         exit;
     } catch (Exception $e) {

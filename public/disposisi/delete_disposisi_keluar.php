@@ -45,12 +45,12 @@ try {
             @unlink($result['file_path']);
         }
 
-        $_SESSION['success'] = "Data berhasil dihapus.";
+        set_flash_message('success', 'Data disposisi keluar berhasil dihapus.');
     } else {
-        $_SESSION['error'] = "Gagal menghapus data.";
+        set_flash_message('danger', 'Gagal menghapus data.');
     }
 } catch (PDOException $e) {
-    $_SESSION['error'] = "Terjadi kesalahan saat menghapus data.";
+    set_flash_message('danger', 'Terjadi kesalahan saat menghapus data.');
 }
 
 header("Location: disposisi_keluar.php");
