@@ -68,9 +68,9 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
             padding: 2rem 1rem;
             background-color: #f8fafc !important;
             background-image: 
-                radial-gradient(circle 600px at 50% 45%, rgba(2, 132, 199, 0.09) 0%, transparent 70%),
-                url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='rgba(148,163,184,0.22)' stroke-width='1'/%3E%3C/svg%3E") !important;
-            background-size: 100% 100%, 40px 40px !important;
+                radial-gradient(circle 650px at 50% 45%, rgba(2, 132, 199, 0.12) 0%, transparent 75%),
+                url("data:image/svg+xml,%3Csvg width='60' height='30' viewBox='0 0 60 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 15 Q15 0 30 15 T60 15' fill='none' stroke='rgba(2,132,199,0.2)' stroke-width='1'/%3E%3Cpath d='M0 15 Q15 30 30 15 T60 15' fill='none' stroke='rgba(2,132,199,0.2)' stroke-width='1'/%3E%3Cpath d='M0 7.5 Q15 22.5 30 7.5 T60 7.5' fill='none' stroke='rgba(148,163,184,0.18)' stroke-width='0.7'/%3E%3Cpath d='M0 22.5 Q15 7.5 30 22.5 T60 22.5' fill='none' stroke='rgba(148,163,184,0.18)' stroke-width='0.7'/%3E%3C/svg%3E") !important;
+            background-size: 100% 100%, 60px 30px !important;
             background-repeat: no-repeat, repeat !important;
             transition: background-color 0.3s ease;
         }
@@ -78,9 +78,9 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
         [data-bs-theme="dark"] body.login-page {
             background-color: #0b0f19 !important;
             background-image: 
-                radial-gradient(circle 600px at 50% 45%, rgba(2, 132, 199, 0.22) 0%, transparent 75%),
-                url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='rgba(56,189,248,0.14)' stroke-width='1'/%3E%3C/svg%3E") !important;
-            background-size: 100% 100%, 40px 40px !important;
+                radial-gradient(circle 650px at 50% 45%, rgba(2, 132, 199, 0.25) 0%, transparent 75%),
+                url("data:image/svg+xml,%3Csvg width='60' height='30' viewBox='0 0 60 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 15 Q15 0 30 15 T60 15' fill='none' stroke='rgba(56,189,248,0.18)' stroke-width='1'/%3E%3Cpath d='M0 15 Q15 30 30 15 T60 15' fill='none' stroke='rgba(56,189,248,0.18)' stroke-width='1'/%3E%3Cpath d='M0 7.5 Q15 22.5 30 7.5 T60 7.5' fill='none' stroke='rgba(14,165,233,0.12)' stroke-width='0.7'/%3E%3Cpath d='M0 22.5 Q15 7.5 30 22.5 T60 22.5' fill='none' stroke='rgba(14,165,233,0.12)' stroke-width='0.7'/%3E%3C/svg%3E") !important;
+            background-size: 100% 100%, 60px 30px !important;
             background-repeat: no-repeat, repeat !important;
         }
 
