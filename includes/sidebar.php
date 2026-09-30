@@ -28,7 +28,7 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
 <div class="sidebar p-3 d-flex flex-column justify-content-between" id="sidebar">
     <div>
         <div class="d-flex align-items-center mb-3">
-            <div class="rounded-3 d-flex align-items-center justify-content-center me-2" style="width: 38px; height: 38px; background: rgba(2, 132, 199, 0.2); color: #38bdf8;">
+            <div class="brand-icon-box me-2">
                 <i class="bi bi-bank fs-4"></i>
             </div>
             <div>
@@ -37,9 +37,9 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
             </div>
         </div>
 
-        <div class="px-2 py-1 mb-3 user-badge rounded small d-flex align-items-center justify-content-between border">
-            <span class="text-truncate me-1"><i class="bi bi-person-circle me-1" style="color: #38bdf8;"></i><?= htmlspecialchars($user_name) ?></span>
-            <span class="badge border text-uppercase" style="font-size: 0.65rem; background: rgba(255,255,255,0.08); color: #cbd5e1;"><?= htmlspecialchars($user_role) ?></span>
+        <div class="px-2 py-1 mb-3 user-badge rounded small d-flex align-items-center justify-content-between">
+            <span class="text-truncate me-1"><i class="bi bi-person-circle me-1" style="color: var(--brand-primary);"></i><?= htmlspecialchars($user_name) ?></span>
+            <span class="badge badge-role border text-uppercase" style="font-size: 0.65rem;"><?= htmlspecialchars($user_role) ?></span>
         </div>
 
         <hr class="my-2">
@@ -91,9 +91,9 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
 
     <div>
         <hr class="my-2">
-        <button type="button" class="btn btn-sm w-100 d-flex align-items-center justify-content-between mb-2 text-start px-3 py-2 border-0" id="themeToggleBtn" style="background: rgba(255, 255, 255, 0.06); color: var(--slate-300); border-radius: 8px;" title="Ganti Tema">
+        <button type="button" class="btn btn-sm w-100 d-flex align-items-center justify-content-between mb-2 text-start px-3 py-2 theme-btn" id="themeToggleBtn" title="Ganti Tema">
             <span class="d-flex align-items-center gap-2 small">
-                <i class="bi bi-moon-stars text-info" id="themeIcon"></i>
+                <i class="bi bi-moon-stars" id="themeIcon"></i>
                 <span id="themeLabel">Mode Gelap</span>
             </span>
             <i class="bi bi-circle-half text-muted"></i>
@@ -135,7 +135,7 @@ if (function_exists('render_flash_toast')) {
                 themeIcon.className = 'bi bi-sun-fill text-warning';
                 themeLabel.textContent = 'Mode Terang';
             } else {
-                themeIcon.className = 'bi bi-moon-stars text-info';
+                themeIcon.className = 'bi bi-moon-stars text-primary';
                 themeLabel.textContent = 'Mode Gelap';
             }
         }

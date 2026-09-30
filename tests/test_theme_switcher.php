@@ -4,12 +4,13 @@ echo "=== Running Theme Switcher Tests ===\n";
 
 $base_dir = dirname(__DIR__);
 
-// 1. Verify CSS dark mode rules
+// 1. Verify CSS dark and light mode rules
 $css_content = file_get_contents($base_dir . '/public/assets/style.css');
-assert(strpos($css_content, '[data-bs-theme="dark"]') !== false, 'style.css must contain [data-bs-theme="dark"] overrides');
+assert(strpos($css_content, '.sidebar') !== false, 'style.css must contain .sidebar rules');
+assert(strpos($css_content, '[data-bs-theme="dark"] .sidebar') !== false, 'style.css must contain [data-bs-theme="dark"] .sidebar overrides');
 assert(strpos($css_content, '[data-bs-theme="dark"] .table-disposisi thead th') !== false, 'style.css must support dark table header');
 assert(strpos($css_content, '[data-bs-theme="dark"] .form-control') !== false, 'style.css must support dark form controls');
-echo "PASS: Dark mode CSS variables and overrides verified.\n";
+echo "PASS: Light and dark mode sidebar CSS rules verified.\n";
 
 // 2. Verify sidebar.php has theme toggle element and persistent JS logic
 $sidebar_content = file_get_contents($base_dir . '/includes/sidebar.php');
