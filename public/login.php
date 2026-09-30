@@ -60,48 +60,49 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="assets/style.css">
     <style>
-        body {
+        body.login-page {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 2rem 1rem;
-            background-color: #f8fafc;
+            background-color: #f8fafc !important;
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.08) 0%, transparent 55%),
-                linear-gradient(to right, rgba(203, 213, 225, 0.45) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(203, 213, 225, 0.45) 1px, transparent 1px);
-            background-size: 100% 100%, 32px 32px, 32px 32px;
-            transition: background 0.3s ease;
+                radial-gradient(circle 600px at 50% 45%, rgba(2, 132, 199, 0.09) 0%, transparent 70%),
+                url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='rgba(148,163,184,0.22)' stroke-width='1'/%3E%3C/svg%3E") !important;
+            background-size: 100% 100%, 40px 40px !important;
+            background-repeat: no-repeat, repeat !important;
+            transition: background-color 0.3s ease;
         }
 
-        [data-bs-theme="dark"] body {
-            background-color: #0b0f19;
+        [data-bs-theme="dark"] body.login-page {
+            background-color: #0b0f19 !important;
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.15) 0%, transparent 60%),
-                linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+                radial-gradient(circle 600px at 50% 45%, rgba(2, 132, 199, 0.22) 0%, transparent 75%),
+                url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='rgba(56,189,248,0.14)' stroke-width='1'/%3E%3C/svg%3E") !important;
+            background-size: 100% 100%, 40px 40px !important;
+            background-repeat: no-repeat, repeat !important;
         }
 
         .form-signin {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             width: 100%;
             max-width: 420px;
             padding: 2.25rem;
             border-radius: 16px;
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
             transition: all 0.3s ease;
         }
 
         [data-bs-theme="dark"] .form-signin {
-            background-color: rgba(17, 24, 39, 0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(55, 65, 81, 0.8);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            background-color: rgba(15, 23, 42, 0.92) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.22) !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 25px rgba(2, 132, 199, 0.12) !important;
             color: #e2e8f0;
         }
 
@@ -128,7 +129,7 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
         }
 
         [data-bs-theme="dark"] .brand-title {
-            color: #ffffff;
+            color: #f8fafc !important;
         }
 
         .form-signin .form-floating {
@@ -145,6 +146,23 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
         .form-signin input:focus {
             border-color: var(--brand-primary, #0284c7);
             box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.2);
+        }
+
+        [data-bs-theme="dark"] .form-signin input {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .form-signin input:focus {
+            background-color: #1e293b !important;
+            border-color: var(--brand-primary, #0284c7) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.25) !important;
+        }
+
+        [data-bs-theme="dark"] .form-floating label {
+            color: #94a3b8 !important;
         }
 
         .btn-login {
@@ -196,7 +214,7 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
     </script>
 </head>
 
-<body class="text-center bg-light">
+<body class="text-center login-page">
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill d-flex align-items-center gap-1 shadow-sm bg-body bg-opacity-75" id="themeToggleBtn" title="Ganti Tema">
             <i class="bi bi-moon-stars" id="themeIcon"></i>

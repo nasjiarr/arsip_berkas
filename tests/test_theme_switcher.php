@@ -27,6 +27,9 @@ assert(strpos($login_content, 'bankkulonprogo.co.id/bpr/wp-content') === false, 
 assert(strpos($login_content, 'date(\'Y\')') !== false, 'login.php must have dynamic copyright year');
 assert(strpos($login_content, 'btnSubmitLogin') !== false, 'login.php must have loading submit protection');
 assert(strpos($login_content, 'radial-gradient') !== false, 'login.php must have elegant radial gradient and grid pattern');
+assert(strpos($login_content, 'login-page') !== false, 'login.php must use scoped login-page body class');
+assert(strpos($login_content, '<body class="text-center bg-light">') === false, 'login.php must not conflict with Bootstrap bg-light on body');
+assert(strpos($login_content, 'image/svg+xml') !== false, 'login.php must use crisp SVG pattern vector');
 echo "PASS: Login page theme toggle markup, local styling, and security features verified.\n";
 
 echo "ALL THEME SWITCHER TESTS PASSED (100%)\n";
