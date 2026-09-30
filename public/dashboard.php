@@ -482,6 +482,14 @@ check_login();
                     handleFiles(e.target.files);
                 });
 
+                function formatSize(bytes) {
+                    if (bytes === 0) return '0 B';
+                    const k = 1024;
+                    const sizes = ['B', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+                }
+
                 // Handle files and validation
                 function handleFiles(files) {
                     filesList.innerHTML = '';
@@ -491,18 +499,40 @@ check_login();
                         const div = document.createElement('div');
                         div.className = 'selected-file-item';
 
-                        // Validate file type
-                        if (!validTypes.includes(file.type)) {
+                        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                        const iconClass = isPdf ? 'bi bi-file-earmark-pdf text-danger' : 'bi bi-file-earmark-image text-primary';
+                        const isTypeValid = validTypes.includes(file.type) || (isPdf && validTypes.includes('application/pdf'));
+                        const isSizeValid = file.size <= 25 * 1024 * 1024; // 25MB max
+
+                        if (!isTypeValid) {
                             div.innerHTML = `
-                        <span class="text-danger">${file.name} (Format tidak sesuai!)</span>
-                        <i class="bi bi-x-circle remove-file"></i>
-                    `;
+                                <div class="file-meta">
+                                    <i class="bi bi-exclamation-triangle text-danger fs-5"></i>
+                                    <span class="file-name text-danger" title="${file.name}">${file.name}</span>
+                                    <span class="badge bg-danger-subtle text-danger file-size">Format Salah</span>
+                                </div>
+                                <i class="bi bi-x-circle-fill remove-file" title="Hapus berkas"></i>
+                            `;
+                            validFiles = false;
+                        } else if (!isSizeValid) {
+                            div.innerHTML = `
+                                <div class="file-meta">
+                                    <i class="bi bi-exclamation-triangle text-warning fs-5"></i>
+                                    <span class="file-name text-warning" title="${file.name}">${file.name}</span>
+                                    <span class="badge bg-warning-subtle text-warning file-size">&gt;25MB</span>
+                                </div>
+                                <i class="bi bi-x-circle-fill remove-file" title="Hapus berkas"></i>
+                            `;
                             validFiles = false;
                         } else {
                             div.innerHTML = `
-                        <span>${file.name}</span>
-                        <i class="bi bi-x-circle remove-file"></i>
-                    `;
+                                <div class="file-meta">
+                                    <i class="${iconClass} fs-5"></i>
+                                    <span class="file-name" title="${file.name}">${file.name}</span>
+                                    <span class="badge bg-secondary-subtle text-secondary file-size font-monospace">${formatSize(file.size)}</span>
+                                </div>
+                                <i class="bi bi-x-circle-fill remove-file" title="Hapus berkas"></i>
+                            `;
                         }
 
                         filesList.appendChild(div);
@@ -517,7 +547,7 @@ check_login();
                     if (e.target.classList.contains('remove-file')) {
                         const dt = new DataTransfer();
                         const files = fileInput.files;
-                        const parent = e.target.parentElement;
+                        const parent = e.target.closest('.selected-file-item');
                         const index = Array.from(filesList.children).indexOf(parent);
 
                         for (let i = 0; i < files.length; i++) {
@@ -531,6 +561,15 @@ check_login();
                         uploadButton.disabled = fileInput.files.length === 0;
                     }
                 });
+
+                // Loading feedback on upload
+                const uploadForm = document.getElementById(formId);
+                if (uploadForm) {
+                    uploadForm.addEventListener('submit', function() {
+                        uploadButton.disabled = true;
+                        uploadButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Mengunggah...';
+                    });
+                }
             }
 
             // Setup handlers for both forms

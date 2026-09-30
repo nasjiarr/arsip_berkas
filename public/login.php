@@ -140,20 +140,6 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
             box-shadow: 0 5px 15px rgba(74, 85, 255, 0.4);
         }
 
-        .toggle-password {
-            border: none;
-            background: transparent;
-            color: #4A55FF;
-            font-size: 0.9rem;
-            padding: 0;
-            margin-top: 0.5rem;
-            transition: color 0.3s ease;
-        }
-
-        .toggle-password:hover {
-            color: #3440FF;
-        }
-
         .alert {
             border-radius: 8px;
             margin-bottom: 1.5rem;
@@ -248,26 +234,32 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
                 <label for="username">Username</label>
             </div>
 
-            <div class="form-floating">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+            <div class="form-floating position-relative mb-3">
+                <input type="password" class="form-control pe-5" id="password" name="password" placeholder="Password" required autocomplete="current-password">
                 <label for="password">Password</label>
+                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted text-decoration-none pe-3 z-3" id="togglePassword" aria-label="Lihat password" style="border:none; background:transparent;">
+                    <i class="bi bi-eye fs-5" id="togglePasswordIcon"></i>
+                </button>
             </div>
 
-            <button type="button" class="toggle-password btn btn-link" id="togglePassword">Lihat Password</button>
-
-            <button class="w-100 btn btn-primary mt-3" type="submit">Masuk</button>
+            <button class="w-100 btn btn-primary mt-2" type="submit">Masuk</button>
 
             <p class="mt-4 copyright text-dark">&copy; 2025</p>
         </form>
     </main>
 
     <script>
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            const passwordField = document.getElementById('password');
-            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordField.setAttribute('type', type);
-            this.textContent = type === 'password' ? 'Lihat Password' : 'Sembunyikan Password';
-        });
+        const toggleBtn = document.getElementById('togglePassword');
+        const passwordField = document.getElementById('password');
+        const toggleIcon = document.getElementById('togglePasswordIcon');
+
+        if (toggleBtn && passwordField && toggleIcon) {
+            toggleBtn.addEventListener('click', function() {
+                const isPassword = passwordField.getAttribute('type') === 'password';
+                passwordField.setAttribute('type', isPassword ? 'text' : 'password');
+                toggleIcon.className = isPassword ? 'bi bi-eye-slash fs-5' : 'bi bi-eye fs-5';
+            });
+        }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

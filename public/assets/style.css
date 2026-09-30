@@ -139,13 +139,48 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px;
-    border-bottom: 1px solid #eee;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.selected-file-item:hover {
+    background-color: #f1f5f9;
+}
+
+.selected-file-item .file-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.selected-file-item .file-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+}
+
+.selected-file-item .file-size {
+    font-size: 0.75rem;
+    padding: 2px 6px;
 }
 
 .remove-file {
-    color: red;
+    color: #ef4444;
     cursor: pointer;
+    font-size: 1.1rem;
+    transition: transform 0.15s ease;
+}
+
+.remove-file:hover {
+    transform: scale(1.2);
 }
 
 /* Sidebar Styling */

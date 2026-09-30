@@ -222,13 +222,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             <label class="file-upload-label">
                                                 <i class="bi bi-cloud-arrow-up"></i>
                                                 <span class="d-block mt-2">Pilih file atau drag & drop disini</span>
-                                                <small class="text-muted d-block mt-1">Format yang didukung: PDF, JPG, JPEG, PNG</small>
+                                                <small class="text-muted d-block mt-1">Format yang didukung: PDF, JPG, JPEG, PNG (Maks. 10MB)</small>
                                                 <input type="file" id="file" name="file" accept=".pdf,.jpg,.jpeg,.png">
                                             </label>
                                         </div>
-                                        <div id="preview-area" class="preview-area">
-                                            <img id="image-preview" class="img-fluid rounded">
-                                            <p id="file-name" class="mt-2 mb-0"></p>
+                                        <div id="preview-area" class="preview-area p-3 bg-light rounded border mt-3" style="display: none;">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                                    <i id="preview-icon" class="bi bi-file-earmark-pdf text-danger fs-3"></i>
+                                                    <div>
+                                                        <p id="file-name" class="fw-semibold mb-0 text-truncate" style="max-width: 320px;"></p>
+                                                        <span id="file-size" class="badge bg-secondary-subtle text-secondary font-monospace"></span>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" id="btn-cancel-file" title="Batalkan pilihan file">
+                                                    <i class="bi bi-trash me-1"></i>Hapus
+                                                </button>
+                                            </div>
+                                            <div class="text-center mt-2" id="image-preview-container" style="display: none;">
+                                                <img id="image-preview" class="img-thumbnail" style="max-height: 140px;">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -252,50 +265,82 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 
-    <!-- Bootstrap Bundle with Popper -->
+    <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         // Form validation
         (function() {
             'use strict'
-            var forms = document.querySelectorAll('.needs-validation')
-            Array.prototype.slice.call(forms).forEach(function(form) {
+            const forms = document.querySelectorAll('.needs-validation')
+            Array.from(forms).forEach(function(form) {
                 form.addEventListener('submit', function(event) {
                     if (!form.checkValidity()) {
                         event.preventDefault()
                         event.stopPropagation()
+                    } else {
+                        const btn = form.querySelector('button[type="submit"]');
+                        if (btn) {
+                            btn.disabled = true;
+                            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menyimpan...';
+                        }
                     }
                     form.classList.add('was-validated')
                 }, false)
             })
         })()
 
-        // File upload preview
-        document.getElementById('file').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const previewArea = document.getElementById('preview-area');
-            const imagePreview = document.getElementById('image-preview');
-            const fileName = document.getElementById('file-name');
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
 
-            if (file) {
-                fileName.textContent = file.name;
-                previewArea.style.display = 'block';
+        const fileInput = document.getElementById('file');
+        const previewArea = document.getElementById('preview-area');
+        const previewIcon = document.getElementById('preview-icon');
+        const imagePreview = document.getElementById('image-preview');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+        const btnCancel = document.getElementById('btn-cancel-file');
 
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        imagePreview.src = e.target.result;
-                        imagePreview.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                } else {
-                    imagePreview.style.display = 'none';
-                }
-            } else {
+        function updateFilePreview(file) {
+            if (!file) {
                 previewArea.style.display = 'none';
+                return;
             }
+            fileName.textContent = file.name;
+            fileSize.textContent = formatBytes(file.size);
+            previewArea.style.display = 'block';
+
+            if (file.type.startsWith('image/')) {
+                previewIcon.className = 'bi bi-file-earmark-image text-primary fs-3';
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewIcon.className = 'bi bi-file-earmark-pdf text-danger fs-3';
+                imagePreviewContainer.style.display = 'none';
+            }
+        }
+
+        fileInput.addEventListener('change', function(e) {
+            updateFilePreview(e.target.files[0]);
         });
+
+        if (btnCancel) {
+            btnCancel.addEventListener('click', function() {
+                fileInput.value = '';
+                previewArea.style.display = 'none';
+                imagePreviewContainer.style.display = 'none';
+            });
+        }
 
         // Drag and drop functionality
         const dropZone = document.querySelector('.file-upload-label');
@@ -319,10 +364,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         function highlight(e) {
             dropZone.classList.add('bg-light');
+            dropZone.style.borderColor = '#0d6efd';
         }
 
         function unhighlight(e) {
             dropZone.classList.remove('bg-light');
+            dropZone.style.borderColor = '';
         }
 
         dropZone.addEventListener('drop', handleDrop, false);
@@ -330,10 +377,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         function handleDrop(e) {
             const dt = e.dataTransfer;
             const files = dt.files;
-            const fileInput = document.getElementById('file');
-
             fileInput.files = files;
-            fileInput.dispatchEvent(new Event('change'));
+            updateFilePreview(files[0]);
         }
     </script>
 </body>
