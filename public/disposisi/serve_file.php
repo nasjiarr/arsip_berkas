@@ -12,11 +12,26 @@ if (!isset($_GET['path']) || empty($_GET['path'])) {
 }
 
 $file_path = urldecode($_GET['path']);
+$normalized = str_replace('/', '\\', $file_path);
 
-// Security check - ensure the path contains expected network path
-if (strpos($file_path, '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\') === false) {
+// Security check - ensure path starts strictly with the network share and prevents directory traversal
+if (strpos($normalized, '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\') !== 0 || str_contains($normalized, '..')) {
     header("HTTP/1.0 403 Forbidden");
     exit("Access denied");
+}
+
+$ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+$mime_map = [
+    'pdf'  => 'application/pdf',
+    'jpg'  => 'image/jpeg',
+    'jpeg' => 'image/jpeg',
+    'png'  => 'image/png',
+    'gif'  => 'image/gif',
+];
+
+if (!array_key_exists($ext, $mime_map)) {
+    header("HTTP/1.0 403 Forbidden");
+    exit("File type not allowed");
 }
 
 // Verify file exists
@@ -26,11 +41,10 @@ if (!file_exists($file_path)) {
 }
 
 // Get file information
-$file_info = pathinfo($file_path);
 $file_size = filesize($file_path);
 
-// Set appropriate headers for PDF files
-header('Content-Type: application/pdf');
+// Set appropriate headers based on verified extension
+header('Content-Type: ' . $mime_map[$ext]);
 header('Content-Disposition: inline; filename="' . basename($file_path) . '"');
 header('Content-Length: ' . $file_size);
 header('Cache-Control: public, must-revalidate, max-age=0');

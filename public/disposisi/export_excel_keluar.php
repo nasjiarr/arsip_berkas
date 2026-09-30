@@ -1,6 +1,13 @@
 <?php
 require '../../vendor/autoload.php';
 require_once '../../includes/config.php';
+require_once '../../includes/auth.php';
+
+check_login();
+if (!in_array($_SESSION['user']['role'] ?? '', ['sekre', 'ti_admin'])) {
+    http_response_code(403);
+    exit('Akses ditolak.');
+}
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;

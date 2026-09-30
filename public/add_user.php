@@ -17,7 +17,11 @@ $role_names = [
 
 // Handle form submission untuk menambah user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user'])) {
-    $username = $_POST['username'];
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        die('Token keamanan tidak valid.');
+    }
+
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
     $new_user_role = $_POST['role'];
 
@@ -28,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user'])) {
         $query = "INSERT INTO users (username, password, role) VALUES (:username, :password, :role)";
         $stmt = $pdo->prepare($query);
         $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-        $stmt->bindParam(':password', $hashed_password, PDO::PARAM_STR); // Gunakan hashed_password
+        $stmt->bindParam(':password', $hashed_password, PDO::PARAM_STR);
         $stmt->bindParam(':role', $new_user_role, PDO::PARAM_STR);
         $stmt->execute();
         $message = "User berhasil ditambahkan!";
@@ -37,18 +41,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user'])) {
     }
 }
 
-// Handle request untuk menghapus user
-if (isset($_GET['delete'])) {
-    $id = $_GET['delete'];
-    try {
-        $query = "DELETE FROM users WHERE id = :id";
-        $stmt = $pdo->prepare($query);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        header("Location: add_user.php");
-        exit();
-    } catch (PDOException $e) {
-        $message = "Gagal menghapus user: " . $e->getMessage();
+// Handle request untuk menghapus user via POST + CSRF
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user'])) {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        die('Token keamanan tidak valid.');
+    }
+
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id <= 0) {
+        $message = "ID user tidak valid.";
+    } elseif ($id === (int)($_SESSION['user']['id'] ?? 0)) {
+        $message = "Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.";
+    } else {
+        try {
+            $query = "DELETE FROM users WHERE id = :id";
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            header("Location: add_user.php");
+            exit();
+        } catch (PDOException $e) {
+            $message = "Gagal menghapus user: " . $e->getMessage();
+        }
     }
 }
 
@@ -210,6 +224,7 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                         <div class="card-body">
                             <form method="POST">
+                                <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Username</label>
                                     <input type="text" class="form-control" id="username" name="username" required>
@@ -260,9 +275,13 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 <td><?php echo htmlspecialchars($user['username']); ?></td>
                                                 <td><?php echo htmlspecialchars($role_names[$user['role']] ?? $user['role']); ?></td>
                                                 <td>
-                                                    <a href="add_user.php?delete=<?php echo $user['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?');">
-                                                        <i class="bi bi-trash2"></i> Hapus
-                                                    </a>
+                                                    <form method="POST" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini?');">
+                                                        <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
+                                                        <input type="hidden" name="id" value="<?php echo (int)$user['id']; ?>">
+                                                        <button type="submit" name="delete_user" class="btn btn-danger btn-sm">
+                                                            <i class="bi bi-trash2"></i> Hapus
+                                                        </button>
+                                                    </form>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

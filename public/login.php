@@ -6,42 +6,44 @@ $error = null;
 
 // Proses login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
-    $password = $_POST['password'];
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        $error = "Token sesi tidak valid. Silakan coba lagi.";
+    } else {
+        $username = trim($_POST['username']);
+        $password = $_POST['password'];
 
-    // Cegah serangan XSS
-    $username = htmlspecialchars($username);
+        // Query untuk mencari user berdasarkan username
+        $query = "SELECT * FROM users WHERE username = :username";
+        $stmt = $pdo->prepare($query);
+        $stmt->bindParam(':username', $username, PDO::PARAM_STR);
+        $stmt->execute();
 
-    // Query untuk mencari user berdasarkan username
-    $query = "SELECT * FROM users WHERE username = :username";
-    $stmt = $pdo->prepare($query);
-    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-    $stmt->execute();
+        // Cek apakah user ditemukan
+        if ($stmt->rowCount() === 1) {
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Cek apakah user ditemukan
-    if ($stmt->rowCount() === 1) {
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (password_verify($password, $user['password'])) {
+                session_regenerate_id(true);
+                $_SESSION['user'] = [
+                    'id' => $user['id'],
+                    'username' => $user['username'],
+                    'role' => $user['role']
+                ];
+                $_SESSION['login_time'] = time();
 
-        if (password_verify($password, $user['password'])) {
-            $_SESSION['user'] = [
-                'id' => $user['id'],
-                'username' => $user['username'],
-                'role' => $user['role']
-            ];
-            $_SESSION['login_time'] = time();
-
-            // Add role-based redirection
-            if ($user['role'] === 'sekre') {
-                header("Location: disposisi/disposisi.php");
-            } else {
-                header("Location: dashboard.php");
+                // Add role-based redirection
+                if ($user['role'] === 'sekre') {
+                    header("Location: disposisi/disposisi.php");
+                } else {
+                    header("Location: dashboard.php");
+                }
+                exit();
             }
-            exit();
         }
-    }
 
-    // Error jika username/password salah
-    $error = "Username atau password salah!";
+        // Error jika username/password salah
+        $error = "Username atau password salah!";
+    }
 }
 
 // Tampilkan pesan logout jika ada
@@ -220,6 +222,7 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
 <body class="text-center bg-light">
     <main class="form-signin">
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
             <svg class="logo" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
             </svg>

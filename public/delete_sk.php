@@ -6,7 +6,8 @@ require_once '../includes/config.php';
 
 // Check if user is logged in and has appropriate role
 check_login();
-if (!in_array($role, ['admin_dok', 'ti_admin'])) {
+$user_role = $_SESSION['user']['role'] ?? '';
+if (!in_array($user_role, ['admin_dok', 'ti_admin'])) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit;
@@ -39,10 +40,6 @@ try {
     if ($sk['file_path'] && file_exists($sk['file_path'])) {
         unlink($sk['file_path']);
     }
-
-    // Delete related records in other tables first (if any)
-    $stmt = $pdo->prepare("DELETE FROM sk_table WHERE id = ?");
-    $stmt->execute([$sk_id]);
 
     // Delete the SK record
     $stmt = $pdo->prepare("DELETE FROM sk_table WHERE id = ?");

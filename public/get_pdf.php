@@ -13,7 +13,11 @@ $network_paths = [
 $role = $_SESSION['user']['role'];
 
 if (isset($_GET['norek'])) {
-    $norek = trim($_GET['norek']);
+    $norek = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', trim($_GET['norek']));
+    if (empty($norek)) {
+        header('HTTP/1.0 400 Bad Request');
+        exit('Nomor berkas tidak valid.');
+    }
     $pdf_file = null;
 
     // Search in all paths

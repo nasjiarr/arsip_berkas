@@ -57,7 +57,7 @@ check_login();
                         <?php endif; ?>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-dark <?php echo basename($_SERVER['PHP_SELF']) == 'cek_sk.php' || 'cek_sop.php' ? 'active text-white bg-primary' : 'text-dark'; ?>" href="#" id="dropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle text-dark <?php echo in_array(basename($_SERVER['PHP_SELF']), ['cek_sk.php', 'cek_sop.php']) ? 'active text-white bg-primary' : 'text-dark'; ?>" href="#" id="dropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-list-check"></i> Cek Berkas
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
@@ -151,12 +151,26 @@ check_login();
                 }, 5000);
             }
 
+            function escapeHtml(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
             // Fungsi untuk membuat card SK
             function createSkCard(sk) {
+                const nomorSk = escapeHtml(sk.nomor_sk);
+                const tahunDisahkan = escapeHtml(sk.tahun_disahkan);
+                const judulSk = escapeHtml(sk.judul_sk);
+                const skId = encodeURIComponent(sk.id);
                 let deleteButton = '';
                 <?php if ($role === 'admin_dok' || $role === 'ti_admin'): ?>
                     deleteButton = `
-                        <button class="btn btn-danger ms-2 delete-sk" data-sk-id="${sk.id}" data-sk-nomor="${sk.nomor_sk}">
+                        <button class="btn btn-danger ms-2 delete-sk" data-sk-id="${skId}" data-sk-nomor="${nomorSk}">
                             <i class="bi bi-trash me-1"></i> Hapus
                         </button>
                     `;
@@ -172,13 +186,13 @@ check_login();
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div>
-                                            <span class="text-primary">${sk.nomor_sk}</span> | 
-                                            <span>${sk.tahun_disahkan}</span>
+                                            <span class="text-primary">${nomorSk}</span> | 
+                                            <span>${tahunDisahkan}</span>
                                         </div>
                                     </div>
-                                    <h5 class="mb-3">${sk.judul_sk}</h5>
+                                    <h5 class="mb-3">${judulSk}</h5>
                                     <div>
-                                        <a href="detail_sk.php?id=${sk.id}" class="btn btn-primary">
+                                        <a href="detail_sk.php?id=${skId}" class="btn btn-primary">
                                             <i class="bi bi-search me-1"></i> Selengkapnya
                                         </a>
                                         ${deleteButton}

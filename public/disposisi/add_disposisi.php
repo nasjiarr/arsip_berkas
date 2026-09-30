@@ -10,6 +10,9 @@ define('NETWORK_PDF_PATH', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\');
 define('LOCAL_IMAGE_PATH', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        die('Token keamanan tidak valid.');
+    }
     try {
         $pdo->beginTransaction();
 
@@ -31,21 +34,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
         // Handle file upload
-        if (isset($_FILES['file']) && $_FILES['file']['error'] == 0) {
+        if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['file'];
-            $file_type = $file['type'];
 
-            // Validate file type
-            if (!in_array($file_type, ALLOWED_TYPES)) {
-                throw new Exception('Tipe file tidak diizinkan');
+            // ponytail: validate real MIME type using finfo; extend map if other formats needed.
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime_type = $finfo->file($file['tmp_name']);
+
+            $allowed_mime_to_ext = [
+                'application/pdf' => 'pdf',
+                'image/jpeg'      => 'jpg',
+                'image/png'       => 'png',
+                'image/gif'       => 'gif',
+            ];
+
+            if (!array_key_exists($mime_type, $allowed_mime_to_ext)) {
+                throw new Exception('Tipe file tidak diizinkan. Hanya PDF dan Gambar (JPG, PNG, GIF) yang diperbolehkan.');
             }
 
-            // Generate unique filename
-            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $filename = uniqid() . '.' . $ext;
+            // Generate unique filename using safe extension from verified MIME
+            $ext = $allowed_mime_to_ext[$mime_type];
+            $filename = uniqid('disp_', true) . '.' . $ext;
 
             // Determine upload path based on file type
-            if ($file_type == 'application/pdf') {
+            if ($mime_type === 'application/pdf') {
                 // Create network directory if it doesn't exist
                 if (!is_dir(NETWORK_PDF_PATH)) {
                     if (!mkdir(NETWORK_PDF_PATH, 0755, true)) {
@@ -167,6 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                     <div class="card-body p-4">
                         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                             <div class="row g-4">
                                 <!-- Kode & Nomor Surat -->
                                 <div class="col-md-6">

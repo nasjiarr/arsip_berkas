@@ -458,12 +458,13 @@ function getNamaBulan($bulan)
                                                                 class="btn btn-sm btn-warning me-1" title="Edit">
                                                                 <i class="fas fa-edit"></i>
                                                             </a>
-                                                            <a href="delete_disposisi_keluar.php?id=<?= htmlspecialchars($row['id'] ?? '') ?>"
-                                                                class="btn btn-sm btn-danger"
-                                                                onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')"
-                                                                title="Hapus">
-                                                                <i class="fas fa-trash"></i>
-                                                            </a>
+                                                            <form method="POST" action="delete_disposisi_keluar.php" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                                                <input type="hidden" name="id" value="<?= htmlspecialchars($row['id'] ?? '') ?>">
+                                                                <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </form>
                                                         </div>
                                                     </td>
                                                 <?php endif; ?>
