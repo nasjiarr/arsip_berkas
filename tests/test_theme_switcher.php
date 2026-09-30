@@ -29,7 +29,9 @@ assert(strpos($login_content, 'btnSubmitLogin') !== false, 'login.php must have 
 assert(strpos($login_content, 'radial-gradient') !== false, 'login.php must have elegant radial gradient and grid pattern');
 assert(strpos($login_content, 'login-page') !== false, 'login.php must use scoped login-page body class');
 assert(strpos($login_content, '<body class="text-center bg-light">') === false, 'login.php must not conflict with Bootstrap bg-light on body');
-assert(strpos($login_content, 'image/svg+xml') !== false, 'login.php must use crisp SVG pattern vector');
-echo "PASS: Login page theme toggle markup, local styling, and security features verified.\n";
+assert(strpos($login_content, 'bank-seal-light.svg') !== false, 'login.php must link to local bank seal light SVG asset');
+assert(file_exists($base_dir . '/public/assets/images/bank-seal-light.svg'), 'bank-seal-light.svg must exist');
+assert(file_exists($base_dir . '/public/assets/images/bank-seal-dark.svg'), 'bank-seal-dark.svg must exist');
+echo "PASS: Login page theme toggle markup, local styling, and bank seal watermark verified.\n";
 
 echo "ALL THEME SWITCHER TESTS PASSED (100%)\n";

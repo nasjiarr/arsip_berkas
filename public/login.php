@@ -68,20 +68,22 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
             padding: 2rem 1rem;
             background-color: #f8fafc !important;
             background-image: 
-                radial-gradient(circle 650px at 50% 45%, rgba(2, 132, 199, 0.12) 0%, transparent 75%),
-                url("data:image/svg+xml,%3Csvg width='60' height='30' viewBox='0 0 60 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 15 Q15 0 30 15 T60 15' fill='none' stroke='rgba(2,132,199,0.2)' stroke-width='1'/%3E%3Cpath d='M0 15 Q15 30 30 15 T60 15' fill='none' stroke='rgba(2,132,199,0.2)' stroke-width='1'/%3E%3Cpath d='M0 7.5 Q15 22.5 30 7.5 T60 7.5' fill='none' stroke='rgba(148,163,184,0.18)' stroke-width='0.7'/%3E%3Cpath d='M0 22.5 Q15 7.5 30 22.5 T60 22.5' fill='none' stroke='rgba(148,163,184,0.18)' stroke-width='0.7'/%3E%3C/svg%3E") !important;
-            background-size: 100% 100%, 60px 30px !important;
-            background-repeat: no-repeat, repeat !important;
+                radial-gradient(circle 650px at 50% 50%, rgba(2, 132, 199, 0.1) 0%, transparent 75%),
+                url("assets/images/bank-seal-light.svg") !important;
+            background-size: 100% 100%, 820px 820px !important;
+            background-position: center center, center center !important;
+            background-repeat: no-repeat, no-repeat !important;
             transition: background-color 0.3s ease;
         }
 
         [data-bs-theme="dark"] body.login-page {
             background-color: #0b0f19 !important;
             background-image: 
-                radial-gradient(circle 650px at 50% 45%, rgba(2, 132, 199, 0.25) 0%, transparent 75%),
-                url("data:image/svg+xml,%3Csvg width='60' height='30' viewBox='0 0 60 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 15 Q15 0 30 15 T60 15' fill='none' stroke='rgba(56,189,248,0.18)' stroke-width='1'/%3E%3Cpath d='M0 15 Q15 30 30 15 T60 15' fill='none' stroke='rgba(56,189,248,0.18)' stroke-width='1'/%3E%3Cpath d='M0 7.5 Q15 22.5 30 7.5 T60 7.5' fill='none' stroke='rgba(14,165,233,0.12)' stroke-width='0.7'/%3E%3Cpath d='M0 22.5 Q15 7.5 30 22.5 T60 22.5' fill='none' stroke='rgba(14,165,233,0.12)' stroke-width='0.7'/%3E%3C/svg%3E") !important;
-            background-size: 100% 100%, 60px 30px !important;
-            background-repeat: no-repeat, repeat !important;
+                radial-gradient(circle 650px at 50% 50%, rgba(2, 132, 199, 0.22) 0%, transparent 75%),
+                url("assets/images/bank-seal-dark.svg") !important;
+            background-size: 100% 100%, 820px 820px !important;
+            background-position: center center, center center !important;
+            background-repeat: no-repeat, no-repeat !important;
         }
 
         .form-signin {
@@ -201,6 +203,10 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
         }
 
         @media (max-width: 576px) {
+            body.login-page,
+            [data-bs-theme="dark"] body.login-page {
+                background-size: 100% 100%, 520px 520px !important;
+            }
             .form-signin {
                 padding: 1.5rem;
             }
