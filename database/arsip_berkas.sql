@@ -228,8 +228,9 @@ INSERT INTO `se_table` (`id`, `nomor_se`, `kategori`, `judul_se`, `tanggal_ditet
 CREATE TABLE `sk_table` (
   `id` int NOT NULL,
   `nomor_sk` varchar(50) NOT NULL,
-  `kategori` varchar(255) NOT NULL,
+  `kategori` varchar(255) DEFAULT 'Lain-lain',
   `judul_sk` text NOT NULL,
+  `tahun_disahkan` varchar(10) DEFAULT NULL,
   `tanggal_ditetapkan` date DEFAULT NULL,
   `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'Berlaku',
   `file_path` varchar(255) NOT NULL,
@@ -240,11 +241,11 @@ CREATE TABLE `sk_table` (
 -- Dumping data for table `sk_table`
 --
 
-INSERT INTO `sk_table` (`id`, `nomor_sk`, `kategori`, `judul_sk`, `tanggal_ditetapkan`, `status`, `file_path`, `created_at`) VALUES
-(21, '1111', 'Lain-lain', 'SK Penetapan Hari Libur', '2025-02-18', 'Tidak Berlaku', '\\\\172.16.34.5\\ftp\\SK\\SK Penetapan Hari Libur.pdf', '2025-02-25 06:45:19'),
-(22, '1111123', 'Lain-lain', 'SK Gubernur', '2025-02-11', 'Berlaku', '\\\\172.16.34.5\\ftp\\SK\\SK Gubernur.pdf', '2025-02-25 06:54:50'),
-(26, '1111', 'Lain-lain', 'SK Peraturan', '2025-02-28', 'Tidak Berlaku', '\\\\172.16.34.5\\ftp\\SK\\SK Peraturan.pdf', '2025-02-28 06:52:20'),
-(27, '1121', 'Produk Tabungan', 'SK Tabungan', '2025-02-28', 'Berlaku', '\\\\172.16.34.5\\ftp\\SK\\SK Tabungan.pdf', '2025-02-28 07:15:45');
+INSERT INTO `sk_table` (`id`, `nomor_sk`, `kategori`, `judul_sk`, `tahun_disahkan`, `tanggal_ditetapkan`, `status`, `file_path`, `created_at`) VALUES
+(21, '1111', 'Lain-lain', 'SK Penetapan Hari Libur', '2025', '2025-02-18', 'Tidak Berlaku', '\\\\172.16.34.5\\ftp\\SK\\SK Penetapan Hari Libur.pdf', '2025-02-25 06:45:19'),
+(22, '1111123', 'Lain-lain', 'SK Gubernur', '2025', '2025-02-11', 'Berlaku', '\\\\172.16.34.5\\ftp\\SK\\SK Gubernur.pdf', '2025-02-25 06:54:50'),
+(26, '1111', 'Lain-lain', 'SK Peraturan', '2025', '2025-02-28', 'Tidak Berlaku', '\\\\172.16.34.5\\ftp\\SK\\SK Peraturan.pdf', '2025-02-28 06:52:20'),
+(27, '1121', 'Produk Tabungan', 'SK Tabungan', '2025', '2025-02-28', 'Berlaku', '\\\\172.16.34.5\\ftp\\SK\\SK Tabungan.pdf', '2025-02-28 07:15:45');
 
 -- --------------------------------------------------------
 
@@ -256,8 +257,9 @@ CREATE TABLE `sop_table` (
   `id` int NOT NULL,
   `nomor_sop` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `judul_sop` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `kategori` varchar(255) NOT NULL,
-  `tanggal_ditetapkan` date NOT NULL,
+  `tahun_disahkan` varchar(10) DEFAULT NULL,
+  `kategori` varchar(255) DEFAULT 'Lain-lain',
+  `tanggal_ditetapkan` date DEFAULT NULL,
   `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'Berlaku',
   `file_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
@@ -267,8 +269,8 @@ CREATE TABLE `sop_table` (
 -- Dumping data for table `sop_table`
 --
 
-INSERT INTO `sop_table` (`id`, `nomor_sop`, `judul_sop`, `kategori`, `tanggal_ditetapkan`, `status`, `file_path`, `created_at`) VALUES
-(26, '1112145', 'SOP Pembukaan Rekening', 'Produk Tabungan', '2025-02-27', 'Berlaku', '\\\\172.16.34.5\\ftp\\SOP\\SOP Pembukaan Rekening.pdf', '2025-02-28 02:01:10');
+INSERT INTO `sop_table` (`id`, `nomor_sop`, `judul_sop`, `tahun_disahkan`, `kategori`, `tanggal_ditetapkan`, `status`, `file_path`, `created_at`) VALUES
+(26, '1112145', 'SOP Pembukaan Rekening', '2025', 'Produk Tabungan', '2025-02-27', 'Berlaku', '\\\\172.16.34.5\\ftp\\SOP\\SOP Pembukaan Rekening.pdf', '2025-02-28 02:01:10');
 
 -- --------------------------------------------------------
 
@@ -305,13 +307,17 @@ INSERT INTO `users` (`id`, `username`, `password`, `role`) VALUES
 -- Indexes for table `disposisi_keluar`
 --
 ALTER TABLE `disposisi_keluar`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_disp_keluar_tgl_kode` (`tanggal`, `kode`),
+  ADD KEY `idx_disp_keluar_no` (`no`);
 
 --
 -- Indexes for table `disposisi_surat`
 --
 ALTER TABLE `disposisi_surat`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_disp_tgl_kode` (`tanggal_masuk`, `kode`),
+  ADD KEY `idx_disp_no` (`no`);
 
 --
 -- Indexes for table `kategori_surat`
@@ -348,13 +354,17 @@ ALTER TABLE `se_table`
 -- Indexes for table `sk_table`
 --
 ALTER TABLE `sk_table`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_sk_tahun_nomor` (`tahun_disahkan`, `nomor_sk`),
+  ADD KEY `idx_sk_judul` (`judul_sk`(100));
 
 --
 -- Indexes for table `sop_table`
 --
 ALTER TABLE `sop_table`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_sop_tahun_nomor` (`tahun_disahkan`, `nomor_sop`),
+  ADD KEY `idx_sop_judul` (`judul_sop`(100));
 
 --
 -- Indexes for table `users`

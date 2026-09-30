@@ -680,15 +680,29 @@ function getNamaBulan($bulan)
         function loadPage(url) {
             fetch(url)
                 .then(response => response.text())
-                .then(data => {
-                    // Update konten halaman tanpa reload
-                    document.body.innerHTML = data;
-                    // Update URL di address bar
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    const newTable = doc.querySelector('.table-responsive');
+                    const curTable = document.querySelector('.table-responsive');
+                    if (newTable && curTable) {
+                        curTable.innerHTML = newTable.innerHTML;
+                    }
+
+                    const newNav = doc.querySelector('nav[aria-label="Page navigation"]');
+                    const curNav = document.querySelector('nav[aria-label="Page navigation"]');
+                    if (newNav && curNav) {
+                        curNav.innerHTML = newNav.innerHTML;
+                    }
+
                     window.history.pushState({}, '', url);
-                    // Pasang ulang event listener setelah konten baru dimuat
                     attachPaginationListener();
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error loading page:', error);
+                    window.location.href = url;
+                });
         }
 
         // Fungsi untuk memasang event listener pada pagination

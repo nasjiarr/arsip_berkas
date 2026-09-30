@@ -1,52 +1,56 @@
 <?php
+// ponytail: paginated search with SQL-indexed substring matching; upgrade to FULLTEXT when table exceeds 50k rows.
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
 check_login();
 
 header('Content-Type: application/json');
 
-$searchTerm = isset($_GET['term']) ? $_GET['term'] : '';
+$searchTerm = trim($_GET['term'] ?? '');
+$page = max(1, (int)($_GET['page'] ?? 1));
+$limit = max(1, min(50, (int)($_GET['limit'] ?? 5)));
+$offset = ($page - 1) * $limit;
 
 if (empty($searchTerm)) {
-    echo json_encode(['results' => [], 'suggestions' => []]);
+    echo json_encode([
+        'results'     => [],
+        'suggestions' => [],
+        'currentPage' => 1,
+        'totalPages'  => 0,
+        'total'       => 0
+    ]);
     exit;
 }
 
-// Fungsi untuk menghitung Levenshtein distance dengan batasan
-function getLevenshteinDistance($str1, $str2, $threshold = 3)
-{
-    $distance = levenshtein(strtolower($str1), strtolower($str2));
-    return $distance <= $threshold ? $distance : false;
-}
+$likeParam = '%' . $searchTerm . '%';
 
-// Query untuk pencarian utama (case insensitive)
-$query = "SELECT * FROM sk_table WHERE LOWER(judul_sk) LIKE LOWER(?)";
+// 1. Total count query
+$countStmt = $pdo->prepare("SELECT COUNT(*) FROM sk_table WHERE LOWER(judul_sk) LIKE LOWER(:term) OR LOWER(nomor_sk) LIKE LOWER(:term)");
+$countStmt->execute([':term' => $likeParam]);
+$total = (int)$countStmt->fetchColumn();
+$totalPages = (int)ceil($total / $limit);
+
+// 2. Paginated results query
+$query = "SELECT * FROM sk_table 
+          WHERE LOWER(judul_sk) LIKE LOWER(:term) OR LOWER(nomor_sk) LIKE LOWER(:term) 
+          ORDER BY tahun_disahkan DESC, nomor_sk DESC 
+          LIMIT :limit OFFSET :offset";
 $stmt = $pdo->prepare($query);
-$stmt->execute(['%' . $searchTerm . '%']);
+$stmt->bindValue(':term', $likeParam, PDO::PARAM_STR);
+$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Query untuk suggestions (mengambil semua judul untuk perbandingan)
-$query = "SELECT DISTINCT judul_sk FROM sk_table";
-$stmt = $pdo->prepare($query);
-$stmt->execute();
-$allTitles = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-// Cari similar keywords
-$suggestions = [];
-foreach ($allTitles as $title) {
-    $words = explode(' ', $title);
-    foreach ($words as $word) {
-        if (strlen($word) > 3) { // Abaikan kata yang terlalu pendek
-            if (getLevenshteinDistance($word, $searchTerm) !== false) {
-                if (!in_array($title, $suggestions)) {
-                    $suggestions[] = $title;
-                }
-            }
-        }
-    }
-}
+// 3. Fast SQL-bounded suggestions (top 5 matching titles)
+$sugStmt = $pdo->prepare("SELECT DISTINCT judul_sk FROM sk_table WHERE LOWER(judul_sk) LIKE LOWER(:term) LIMIT 5");
+$sugStmt->execute([':term' => $likeParam]);
+$suggestions = $sugStmt->fetchAll(PDO::FETCH_COLUMN);
 
 echo json_encode([
-    'results' => $results,
-    'suggestions' => array_slice($suggestions, 0, 5) // Batasi 5 saran
+    'results'     => $results,
+    'suggestions' => $suggestions,
+    'currentPage' => $page,
+    'totalPages'  => $totalPages,
+    'total'       => $total
 ]);
