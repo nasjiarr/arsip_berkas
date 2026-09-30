@@ -66,29 +66,42 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
             align-items: center;
             justify-content: center;
             padding: 2rem 1rem;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.08) 0%, transparent 55%),
+                linear-gradient(to right, rgba(203, 213, 225, 0.45) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(203, 213, 225, 0.45) 1px, transparent 1px);
+            background-size: 100% 100%, 32px 32px, 32px 32px;
             transition: background 0.3s ease;
         }
 
         [data-bs-theme="dark"] body {
-            background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e293b 100%);
+            background-color: #0b0f19;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.15) 0%, transparent 60%),
+                linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
         }
 
         .form-signin {
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             width: 100%;
             max-width: 420px;
             padding: 2.25rem;
             border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
             transition: all 0.3s ease;
         }
 
         [data-bs-theme="dark"] .form-signin {
-            background-color: #111827;
-            border: 1px solid #1f2937;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            background-color: rgba(17, 24, 39, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(55, 65, 81, 0.8);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             color: #e2e8f0;
         }
 

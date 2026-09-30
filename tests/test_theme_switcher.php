@@ -26,6 +26,7 @@ assert(strpos($login_content, 'data-bs-theme') !== false, 'login.php must suppor
 assert(strpos($login_content, 'bankkulonprogo.co.id/bpr/wp-content') === false, 'login.php must not hotlink external background images');
 assert(strpos($login_content, 'date(\'Y\')') !== false, 'login.php must have dynamic copyright year');
 assert(strpos($login_content, 'btnSubmitLogin') !== false, 'login.php must have loading submit protection');
+assert(strpos($login_content, 'radial-gradient') !== false, 'login.php must have elegant radial gradient and grid pattern');
 echo "PASS: Login page theme toggle markup, local styling, and security features verified.\n";
 
 echo "ALL THEME SWITCHER TESTS PASSED (100%)\n";
