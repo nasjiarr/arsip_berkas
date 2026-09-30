@@ -357,112 +357,88 @@ function getNamaBulan($bulan)
                                 </div>
                             <?php endif; ?>
 
-                            <div class="table-responsive mt-3">
-                                <table class="table table-hover table-bordered align-middle">
-                                    <thead class="table-light">
+                            <div class="table-responsive shadow-sm rounded border mt-3">
+                                <table class="table table-hover table-bordered table-disposisi align-middle mb-0">
+                                    <thead>
                                         <tr>
-                                            <th class="text-center">No</th>
-                                            <th class="text-center">Kode</th>
-                                            <th class="text-center">Kategori</th>
-                                            <th class="text-center">Tanggal</th>
-                                            <th class="text-center">Nomor Surat</th>
-                                            <th class="text-center">Perihal</th>
-                                            <th class="text-center">Ke</th>
-                                            <th class="text-center">File</th>
+                                            <th class="text-center" style="width: 45px;">No</th>
+                                            <th class="text-center" style="width: 65px;">Kode</th>
+                                            <th class="text-center" style="width: 80px;">Kategori</th>
+                                            <th class="text-center" style="width: 100px;">Tanggal</th>
+                                            <th class="text-center" style="width: 130px;">Nomor Surat</th>
+                                            <th>Perihal</th>
+                                            <th style="width: 140px;">Tujuan (Ke)</th>
+                                            <th class="text-center" style="width: 75px;">Berkas</th>
                                             <?php if ($role === 'sekre' || $role === 'ti_admin'): ?>
-                                                <th class="text-center">Aksi</th>
+                                                <th class="text-center" style="width: 100px;">Aksi</th>
                                             <?php endif; ?>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php
-                                        // Hitung nomor awal berdasarkan halaman dan jumlah baris per halaman
                                         $nomor = ($page - 1) * $rows_per_page + 1;
-
                                         foreach ($result as $row):
+                                            $kode = trim($row['kode'] ?? '');
+                                            $kategori_label = 'Surat Umum';
+                                            $kategori_badge = '<span class="badge badge-umum">Umum</span>';
+                                            if ($kode === '1' || $kode === '001') {
+                                                $kategori_label = 'Surat BI';
+                                                $kategori_badge = '<span class="badge badge-bi"><i class="bi bi-bank me-1"></i>BI</span>';
+                                            } elseif ($kode === '2' || $kode === '002') {
+                                                $kategori_label = 'Surat OJK';
+                                                $kategori_badge = '<span class="badge badge-ojk"><i class="bi bi-shield-check me-1"></i>OJK</span>';
+                                            }
+
+                                            $tgl_fmt = !empty($row['tanggal']) ? date('d/m/Y', strtotime($row['tanggal'])) : '-';
+                                            $file_url = !empty($row['file_path']) ? getFileUrl($row['file_path']) : '';
                                         ?>
                                             <tr>
-                                                <td class="text-center"><?= $nomor++ ?></td>
-                                                <td><?= htmlspecialchars($row['kode'] ?? '') ?></td>
-                                                <td>
-                                                    <?php
-                                                    $kode = $row['kode'] ?? '';
-                                                    if ($kode === '1') {
-                                                        echo 'Surat BI';
-                                                    } elseif ($kode === '2') {
-                                                        echo 'Surat OJK';
-                                                    } else {
-                                                        echo 'Surat Umum';
-                                                    }
-                                                    ?>
-                                                </td>
-                                                <td><?= htmlspecialchars($row['tanggal'] ?? '') ?></td>
-                                                <td><?= htmlspecialchars($row['nomor_surat'] ?? '') ?></td>
-                                                <td><?= htmlspecialchars($row['perihal'] ?? '') ?></td>
-                                                <td><?= htmlspecialchars($row['ke'] ?? '') ?></td>
+                                                <td class="text-center text-muted fw-semibold"><?= $nomor++ ?></td>
+                                                <td class="text-center font-monospace"><span class="badge bg-light text-dark border"><?= htmlspecialchars($row['kode'] ?? '-') ?></span></td>
+                                                <td class="text-center"><?= $kategori_badge ?></td>
+                                                <td class="text-center cell-date"><?= $tgl_fmt ?></td>
+                                                <td class="text-center font-monospace fw-medium"><?= htmlspecialchars($row['nomor_surat'] ?? '-') ?></td>
+                                                <td><span class="cell-truncate" data-bs-toggle="tooltip" title="<?= htmlspecialchars($row['perihal'] ?? '') ?>"><?= htmlspecialchars($row['perihal'] ?? '-') ?></span></td>
+                                                <td><span class="cell-truncate-sm" data-bs-toggle="tooltip" title="<?= htmlspecialchars($row['ke'] ?? '') ?>"><?= htmlspecialchars($row['ke'] ?? '-') ?></span></td>
                                                 <td class="text-center">
                                                     <?php
-                                                    if (!empty($row['file_path'])) {
+                                                    if (!empty($file_url)) {
                                                         $ext = strtolower(pathinfo($row['file_path'], PATHINFO_EXTENSION));
-                                                        $file_url = getFileUrl($row['file_path']);
-
-                                                        if ($ext == 'pdf') {
-                                                            echo "<div class='btn-group'>";
-                                                            echo "<a href='{$file_url}' class='btn btn-sm btn-outline-primary' target='_blank'>
-                                                                    <i class='fas fa-file-pdf'></i> Lihat PDF
-                                                                  </a>";
-                                                            echo "<button type='button' class='btn btn-sm btn-outline-secondary' 
-                                                                    onclick='previewPDF(\"" . htmlspecialchars($file_url) . "\")'>
-                                                                    <i class='fas fa-eye'></i> Preview
-                                                                  </button>";
-                                                            echo "</div>";
+                                                        if ($ext === 'pdf') {
+                                                            echo '<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="previewPDF(\'' . htmlspecialchars($file_url, ENT_QUOTES) . '\')" title="Lihat PDF">
+                                                                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                                                                  </button>';
                                                         } elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
-                                                            echo "<img src='{$file_url}' alt='Gambar' class='img-thumbnail' 
-                                                                  onclick='showModal(this)' style='cursor: zoom-in; max-height: 50px;' 
-                                                                  data-bs-toggle='tooltip' title='Klik untuk memperbesar'>";
+                                                            echo '<img src="' . htmlspecialchars($file_url) . '" alt="Gambar" class="img-thumbnail rounded p-0" 
+                                                                  onclick="showModal(this)" style="cursor: zoom-in; height: 30px; width: 30px; object-fit: cover;" 
+                                                                  data-bs-toggle="tooltip" title="Klik perbesar">';
                                                         }
                                                     } else {
-                                                        echo "<span class='text-muted'><i class='fas fa-times'></i> Tidak tersedia</span>";
+                                                        echo '<span class="text-muted small">-</span>';
                                                     }
                                                     ?>
                                                 </td>
-                                                <!-- Modal Preview -->
-                                                <div class="modal fade" id="pdfPreviewModal" tabindex="-1">
-                                                    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title">Preview PDF</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                            </div>
-                                                            <div class="modal-body p-0">
-                                                                <div class="ratio ratio-16x9">
-                                                                    <iframe id="pdfViewer" class="embed-responsive-item" style="border: none;"></iframe>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <a id="downloadPdf" href="#" class="btn btn-primary" download>
-                                                                    <i class="fas fa-download"></i> Download PDF
-                                                                </a>
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                                    <i class="fas fa-times"></i> Tutup
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
                                                 <?php if ($role === 'sekre' || $role === 'ti_admin'): ?>
                                                     <td class="text-center">
-                                                        <div class="btn-group">
-                                                            <a href="edit_disposisi_keluar.php?id=<?= htmlspecialchars($row['id'] ?? '') ?>"
-                                                                class="btn btn-sm btn-warning me-1" title="Edit">
-                                                                <i class="fas fa-edit"></i>
+                                                        <div class="btn-group btn-group-sm" role="group">
+                                                            <button type="button" class="btn btn-outline-info" title="Detail Lengkap" onclick='showRowDetail(<?= htmlspecialchars(json_encode([
+                                                                "nomor_surat" => $row["nomor_surat"] ?? "-",
+                                                                "kategori" => $kategori_label,
+                                                                "tanggal" => $tgl_fmt,
+                                                                "ke" => $row["ke"] ?? "-",
+                                                                "perihal" => $row["perihal"] ?? "-",
+                                                                "file_url" => $file_url
+                                                            ]), ENT_QUOTES) ?>)'>
+                                                                <i class="bi bi-eye"></i>
+                                                            </button>
+                                                            <a href="edit_disposisi_keluar.php?id=<?= htmlspecialchars($row['id'] ?? '') ?>" class="btn btn-outline-warning" title="Edit">
+                                                                <i class="bi bi-pencil"></i>
                                                             </a>
                                                             <form method="POST" action="delete_disposisi_keluar.php" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                                                                 <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                                                                 <input type="hidden" name="id" value="<?= htmlspecialchars($row['id'] ?? '') ?>">
-                                                                <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
-                                                                    <i class="fas fa-trash"></i>
+                                                                <button type="submit" class="btn btn-outline-danger" title="Hapus" style="border-top-left-radius:0;border-bottom-left-radius:0;">
+                                                                    <i class="bi bi-trash"></i>
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -472,6 +448,62 @@ function getNamaBulan($bulan)
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
+                            </div>
+
+                            <!-- Modal Preview PDF (Placed outside table to prevent DOM duplication) -->
+                            <div class="modal fade" id="pdfPreviewModal" tabindex="-1">
+                                <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title fs-6"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Preview PDF</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body p-0">
+                                            <div class="ratio ratio-16x9">
+                                                <iframe id="pdfViewer" class="embed-responsive-item" style="border: none;"></iframe>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer py-2">
+                                            <a id="downloadPdf" href="#" class="btn btn-sm btn-primary" download>
+                                                <i class="bi bi-download me-1"></i> Download PDF
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+                                                Tutup
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Detail Lengkap Disposisi Keluar -->
+                            <div class="modal fade" id="rowDetailModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content shadow">
+                                        <div class="modal-header bg-light py-2">
+                                            <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-card-text me-2 text-primary"></i>Detail Disposisi Surat Keluar</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-3">
+                                            <dl class="row mb-0 small">
+                                                <dt class="col-sm-4 text-muted">Nomor Surat</dt>
+                                                <dd class="col-sm-8 fw-semibold" id="dtNomorSurat">-</dd>
+                                                <dt class="col-sm-4 text-muted">Kategori</dt>
+                                                <dd class="col-sm-8" id="dtKategori">-</dd>
+                                                <dt class="col-sm-4 text-muted">Tanggal</dt>
+                                                <dd class="col-sm-8" id="dtTanggal">-</dd>
+                                                <dt class="col-sm-4 text-muted">Tujuan (Ke)</dt>
+                                                <dd class="col-sm-8" id="dtAsalTujuan">-</dd>
+                                                <dt class="col-sm-4 text-muted">Perihal</dt>
+                                                <dd class="col-sm-8 text-break" id="dtPerihal">-</dd>
+                                                <dt class="col-sm-4 text-muted">Berkas</dt>
+                                                <dd class="col-sm-8" id="dtBerkas">-</dd>
+                                            </dl>
+                                        </div>
+                                        <div class="modal-footer py-1">
+                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <nav aria-label="Page navigation">
@@ -717,6 +749,30 @@ function getNamaBulan($bulan)
                     }
                 });
             }
+
+            // Re-init bootstrap tooltips
+            const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            tooltips.forEach(el => new bootstrap.Tooltip(el));
+        }
+
+        // Tampilkan modal detail lengkap baris
+        function showRowDetail(data) {
+            document.getElementById('dtNomorSurat').textContent = data.nomor_surat || '-';
+            document.getElementById('dtKategori').textContent = data.kategori || '-';
+            document.getElementById('dtTanggal').textContent = data.tanggal || '-';
+            if (document.getElementById('dtLabelAsal')) {
+                document.getElementById('dtLabelAsal').textContent = 'Tujuan (Ke)';
+                document.getElementById('dtAsalTujuan').textContent = data.ke || '-';
+            }
+            document.getElementById('dtPerihal').textContent = data.perihal || '-';
+            const berkasEl = document.getElementById('dtBerkas');
+            if (data.file_url) {
+                berkasEl.innerHTML = '<a href="' + data.file_url + '" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-box-arrow-up-right me-1"></i>Buka Berkas</a>';
+            } else {
+                berkasEl.textContent = 'Tidak ada file lampiran';
+            }
+            const modal = new bootstrap.Modal(document.getElementById('rowDetailModal'));
+            modal.show();
         }
 
         // Pasang event listener saat halaman pertama kali dimuat
