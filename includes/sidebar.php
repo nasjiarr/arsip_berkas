@@ -91,6 +91,13 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
 
     <div>
         <hr class="my-2">
+        <button type="button" class="btn btn-sm w-100 d-flex align-items-center justify-content-between mb-2 text-start px-3 py-2 border-0" id="themeToggleBtn" style="background: rgba(255, 255, 255, 0.06); color: var(--slate-300); border-radius: 8px;" title="Ganti Tema">
+            <span class="d-flex align-items-center gap-2 small">
+                <i class="bi bi-moon-stars text-info" id="themeIcon"></i>
+                <span id="themeLabel">Mode Gelap</span>
+            </span>
+            <i class="bi bi-circle-half text-muted"></i>
+        </button>
         <a class="nav-link text-danger fw-semibold d-flex align-items-center" href="<?= $base_url ?>logout.php">
             <i class="bi bi-box-arrow-right me-2 fs-5"></i> Keluar
         </a>
@@ -104,6 +111,52 @@ if (function_exists('render_flash_toast')) {
 ?>
 
 <script>
+// Theme Manager: Dark & Light Mode
+(function() {
+    function getPreferredTheme() {
+        const storedTheme = localStorage.getItem('app_theme');
+        if (storedTheme) {
+            return storedTheme;
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('app_theme', theme);
+        updateThemeUI(theme);
+    }
+
+    function updateThemeUI(theme) {
+        const themeIcon = document.getElementById('themeIcon');
+        const themeLabel = document.getElementById('themeLabel');
+        if (themeIcon && themeLabel) {
+            if (theme === 'dark') {
+                themeIcon.className = 'bi bi-sun-fill text-warning';
+                themeLabel.textContent = 'Mode Terang';
+            } else {
+                themeIcon.className = 'bi bi-moon-stars text-info';
+                themeLabel.textContent = 'Mode Gelap';
+            }
+        }
+    }
+
+    // Apply immediately to prevent flash
+    const currentTheme = getPreferredTheme();
+    document.documentElement.setAttribute('data-bs-theme', currentTheme);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateThemeUI(currentTheme);
+        const toggleBtn = document.getElementById('themeToggleBtn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                const activeTheme = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                setTheme(activeTheme);
+            });
+        }
+    });
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');

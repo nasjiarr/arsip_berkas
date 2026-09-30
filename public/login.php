@@ -204,10 +204,33 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
                 margin-bottom: 0.75rem;
             }
         }
+
+        [data-bs-theme="dark"] .form-signin {
+            background-color: rgba(17, 24, 39, 0.95);
+            border: 1px solid #374151;
+            color: #e2e8f0;
+        }
+
+        [data-bs-theme="dark"] .copyright {
+            color: #94a3b8 !important;
+        }
     </style>
+    <script>
+        (function() {
+            const stored = localStorage.getItem('app_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-bs-theme', stored);
+        })();
+    </script>
 </head>
 
 <body class="text-center bg-light">
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill d-flex align-items-center gap-1 shadow-sm bg-body bg-opacity-75" id="themeToggleBtn" title="Ganti Tema">
+            <i class="bi bi-moon-stars" id="themeIcon"></i>
+            <span id="themeLabel" class="small">Tema</span>
+        </button>
+    </div>
+
     <main class="form-signin">
         <form method="POST">
             <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
@@ -258,6 +281,30 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
                 const isPassword = passwordField.getAttribute('type') === 'password';
                 passwordField.setAttribute('type', isPassword ? 'text' : 'password');
                 toggleIcon.className = isPassword ? 'bi bi-eye-slash fs-5' : 'bi bi-eye fs-5';
+            });
+        }
+
+        // Theme toggle logic
+        const themeBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeLabel = document.getElementById('themeLabel');
+
+        function updateLoginThemeUI(t) {
+            if (themeIcon && themeLabel) {
+                themeIcon.className = t === 'dark' ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars';
+                themeLabel.textContent = t === 'dark' ? 'Terang' : 'Gelap';
+            }
+        }
+
+        const initialTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+        updateLoginThemeUI(initialTheme);
+
+        if (themeBtn) {
+            themeBtn.addEventListener('click', function() {
+                const cur = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-bs-theme', cur);
+                localStorage.setItem('app_theme', cur);
+                updateLoginThemeUI(cur);
             });
         }
     </script>
