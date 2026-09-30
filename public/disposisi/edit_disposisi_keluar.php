@@ -131,8 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Edit Data Disposisi</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/style.css">
     <style>
         .file-upload-label {
             display: block;
@@ -186,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="card-header bg-warning text-dark py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">
-                                <i class="fas fa-edit me-2"></i>
+                                <i class="bi bi-pencil-square me-2"></i>
                                 Edit Data Disposisi Keluar
                             </h5>
                         </div>
@@ -258,11 +258,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                     $ext = strtolower(pathinfo($data['file_path'], PATHINFO_EXTENSION));
                                                     $file_url = getFileUrl($data['file_path']);
                                                     if ($ext == 'pdf') {
-                                                        echo "<i class='fas fa-file-pdf text-danger me-2 fa-2x'></i>";
+                                                        echo "<i class='bi bi-file-earmark-pdf text-danger me-2 fs-2'></i>";
                                                         echo "<div>";
                                                         echo "<h6 class='mb-0'>File PDF Saat Ini</h6>";
                                                         echo "<a href='{$file_url}' class='btn btn-sm btn-outline-primary mt-2' target='_blank'>
-                                                                <i class='fas fa-eye me-1'></i>Lihat PDF
+                                                                <i class='bi bi-eye me-1'></i>Lihat PDF
                                                               </a>";
                                                         echo "</div>";
                                                     } elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
@@ -279,7 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                                         <div class="file-upload">
                                             <label class="file-upload-label">
-                                                <i class="fas fa-cloud-upload-alt"></i>
+                                                <i class="bi bi-cloud-arrow-up"></i>
                                                 <span class="d-block mt-2">Upload file baru (opsional)</span>
                                                 <small class="text-muted d-block mt-1">Format yang didukung: PDF, JPG, JPEG, PNG</small>
                                                 <input type="file" id="file" name="file" accept=".pdf,.jpg,.jpeg,.png">
@@ -296,11 +296,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <!-- Buttons -->
                             <div class="d-flex justify-content-end gap-2 mt-4">
                                 <a href="disposisi_keluar.php" class="btn btn-secondary">
-                                    <i class="fas fa-arrow-left me-1"></i>
+                                    <i class="bi bi-arrow-left me-1"></i>
                                     Kembali
                                 </a>
                                 <button type="submit" class="btn btn-warning">
-                                    <i class="fas fa-save me-1"></i>
+                                    <i class="bi bi-floppy me-1"></i>
                                     Simpan Perubahan
                                 </button>
                             </div>

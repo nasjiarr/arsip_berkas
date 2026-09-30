@@ -13,78 +13,15 @@ check_login();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cek SOP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/style.css">
+    <link rel="stylesheet" href="assets/style.css">
 </head>
 
 <body>
-    <!-- Toggle Button for Mobile -->
-    <button class="navbar-toggle" id="sidebarToggle">
-        <i class="bi bi-list"></i>
-    </button>
-
-    <!-- Backdrop for mobile -->
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <?php require_once '../includes/sidebar.php'; ?>
 
     <div class="container-fluid p-0">
         <div class="row g-0">
-            <!-- Sidebar -->
-            <div class="sidebar bg-white p-3" id="sidebar">
-                <div class="d-flex align-items-center mb-4">
-                    <i class="bi bi-bank fs-2 text-primary me-2"></i>
-                    <h4 class="mb-0">Sistem Informasi Bank Kulon Progo</h4>
-                </div>
-
-                <hr>
-
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <?php if ($role === 'sekre'): ?>
-                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'disposisi/disposisi.php' ? 'active text-white bg-primary' : 'text-dark'; ?>" href="disposisi/disposisi.php">
-                                <i class="bi bi-envelope-arrow-down"></i> Disposisi Surat Masuk
-                            </a>
-                        <?php else: ?>
-                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active text-white bg-primary' : 'text-dark'; ?>" href="dashboard.php">
-                                <i class="bi bi-speedometer2"></i> Dashboard
-                            </a>
-                        <?php endif; ?>
-                    </li>
-                    <li class="nav-item">
-                        <?php if ($role === 'sekre'): ?>
-                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'disposisi/disposisi_keluar.php' ? 'active text-white bg-primary' : 'text-dark'; ?>" href="disposisi/disposisi_keluar.php">
-                                <i class="bi bi-envelope-arrow-up"></i> Disposisi Surat Keluar
-                            </a>
-                        <?php endif; ?>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-dark <?php echo in_array(basename($_SERVER['PHP_SELF']), ['cek_sk.php', 'cek_sop.php']) ? 'active text-white bg-primary' : 'text-dark'; ?>" href="#" id="dropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-list-check"></i>
-                            Cek Berkas
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                            <li><a class="dropdown-item <?php echo basename($_SERVER['PHP_SELF']) == 'cek_sk.php' ? 'active text-white bg-primary' : 'text-dark'; ?>" href="cek_sk.php">Cek SK</a></li>
-                            <li><a class="dropdown-item <?php echo basename($_SERVER['PHP_SELF']) == 'cek_sop.php' ? 'active text-white bg-primary' : 'text-dark'; ?>" href="cek_sop.php">Cek SOP</a></li>
-                            <?php if ($role !== 'sekre'): ?>
-                                <li><a class="dropdown-item" href="disposisi/disposisi.php">Disposisi Surat Masuk</a></li>
-                                <li><a class="dropdown-item" href="disposisi/disposisi_keluar.php">Disposisi Surat Keluar</a></li>
-                            <?php endif; ?>
-                        </ul>
-                    </li>
-                    <?php if ($role === 'ti_admin'): ?>
-                        <li class="nav-item">
-                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'add_user.php' ? 'active text-white bg-primary' : 'text-dark'; ?>" href="add_user.php">
-                                <i class="bi bi-person-plus"></i> Kelola User
-                            </a>
-                        </li>
-                    <?php endif; ?>
-                    <li class="nav-item">
-                        <a class="nav-link text-danger fw-bold" href="logout.php">
-                            <i class="bi bi-box-arrow-right text-danger"></i> Keluar
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 content">
                 <div class="user-welcome">
@@ -302,34 +239,6 @@ check_login();
 
                     // Load semua SOP saat pertama kali
                     loadSOP(1);
-
-                    const sidebar = document.getElementById('sidebar');
-                    const sidebarToggle = document.getElementById('sidebarToggle');
-                    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
-
-                    function toggleSidebar() {
-                        sidebar.classList.toggle('show');
-                        sidebarBackdrop.classList.toggle('show');
-
-                        // Sembunyikan tombol hanya jika layar ≤ 768px
-                        if (window.innerWidth <= 768) {
-                            sidebarToggle.style.display = sidebar.classList.contains('show') ? 'none' : 'block';
-                        }
-                    }
-
-                    sidebarToggle.addEventListener('click', toggleSidebar);
-                    sidebarBackdrop.addEventListener('click', toggleSidebar);
-
-                    // Menampilkan kembali tombol saat sidebar ditutup atau layar diperbesar
-                    window.addEventListener('resize', function() {
-                        if (window.innerWidth > 768) {
-                            sidebar.classList.remove('show');
-                            sidebarBackdrop.classList.remove('show');
-                            sidebarToggle.style.display = "block"; // Pastikan tombol selalu muncul di desktop
-                        } else if (!sidebar.classList.contains('show')) {
-                            sidebarToggle.style.display = "block"; // Jika sidebar tertutup di mobile, tampilkan kembali tombol
-                        }
-                    });
                 });
             </script>
 </body>

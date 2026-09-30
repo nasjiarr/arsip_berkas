@@ -111,8 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Tambah Data Disposisi</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/style.css">
     <style>
         .file-upload-label {
             display: block;
@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="card-header bg-primary text-white py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">
-                                <i class="fas fa-plus me-2"></i>
+                                <i class="bi bi-plus-lg me-2"></i>
                                 Tambah Data Disposisi Keluar
                             </h5>
                         </div>
@@ -220,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <label class="form-label">Upload File (PDF/Gambar)</label>
                                         <div class="file-upload">
                                             <label class="file-upload-label">
-                                                <i class="fas fa-cloud-upload-alt"></i>
+                                                <i class="bi bi-cloud-arrow-up"></i>
                                                 <span class="d-block mt-2">Pilih file atau drag & drop disini</span>
                                                 <small class="text-muted d-block mt-1">Format yang didukung: PDF, JPG, JPEG, PNG</small>
                                                 <input type="file" id="file" name="file" accept=".pdf,.jpg,.jpeg,.png">
@@ -237,11 +237,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <!-- Buttons -->
                             <div class="d-flex justify-content-end gap-2 mt-4">
                                 <a href="disposisi_keluar.php" class="btn btn-secondary">
-                                    <i class="fas fa-arrow-left me-1"></i>
+                                    <i class="bi bi-arrow-left me-1"></i>
                                     Kembali
                                 </a>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-1"></i>
+                                    <i class="bi bi-floppy me-1"></i>
                                     Simpan Data
                                 </button>
                             </div>
