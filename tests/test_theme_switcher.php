@@ -19,10 +19,13 @@ assert(strpos($sidebar_content, 'app_theme') !== false, 'sidebar.php must sync w
 assert(strpos($sidebar_content, 'data-bs-theme') !== false, 'sidebar.php must set data-bs-theme attribute');
 echo "PASS: Sidebar theme switcher markup and localStorage logic verified.\n";
 
-// 3. Verify login.php has theme toggle support
+// 3. Verify login.php has theme toggle support, no hotlinked assets, and loading state
 $login_content = file_get_contents($base_dir . '/public/login.php');
 assert(strpos($login_content, 'id="themeToggleBtn"') !== false, 'login.php must contain theme toggle button');
 assert(strpos($login_content, 'data-bs-theme') !== false, 'login.php must support data-bs-theme');
-echo "PASS: Login page theme toggle markup and script verified.\n";
+assert(strpos($login_content, 'bankkulonprogo.co.id/bpr/wp-content') === false, 'login.php must not hotlink external background images');
+assert(strpos($login_content, 'date(\'Y\')') !== false, 'login.php must have dynamic copyright year');
+assert(strpos($login_content, 'btnSubmitLogin') !== false, 'login.php must have loading submit protection');
+echo "PASS: Login page theme toggle markup, local styling, and security features verified.\n";
 
 echo "ALL THEME SWITCHER TESTS PASSED (100%)\n";

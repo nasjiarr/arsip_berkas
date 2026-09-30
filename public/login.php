@@ -61,30 +61,61 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
     <link rel="stylesheet" href="assets/style.css">
     <style>
         body {
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            padding-top: 40px;
-            padding-bottom: 40px;
-            background-image: url(https://bankkulonprogo.co.id/bpr/wp-content/uploads/2021/06/gedunghead2.jpg);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: -1;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            box-shadow: inset 0 0 0 2000px rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            padding: 2rem 1rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            transition: background 0.3s ease;
+        }
 
+        [data-bs-theme="dark"] body {
+            background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e293b 100%);
         }
 
         .form-signin {
-            background: rgba(255, 255, 255, 0.95);
-            width: 90%;
-            /* Changed from 100% */
-            max-width: 400px;
-            padding: 2rem;
-            margin: auto;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            background: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            padding: 2.25rem;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        [data-bs-theme="dark"] .form-signin {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            color: #e2e8f0;
+        }
+
+        .brand-badge {
+            width: 64px;
+            height: 64px;
+            background: rgba(2, 132, 199, 0.12);
+            color: var(--brand-primary, #0284c7);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        [data-bs-theme="dark"] .brand-badge {
+            background: rgba(2, 132, 199, 0.2);
+            color: #38bdf8;
+        }
+
+        .brand-title {
+            color: var(--slate-900, #0f172a);
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        [data-bs-theme="dark"] .brand-title {
+            color: #ffffff;
         }
 
         .form-signin .form-floating {
@@ -94,50 +125,30 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
         .form-signin input {
             height: 50px;
             border-radius: 8px;
-            border: 1px solid #ced4da;
-            transition: all 0.3s ease;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
         }
 
         .form-signin input:focus {
-            border-color: #4A55FF;
-            box-shadow: 0 0 0 0.2rem rgba(74, 85, 255, 0.25);
+            border-color: var(--brand-primary, #0284c7);
+            box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.2);
         }
 
-        .logo {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 1.5rem;
-            color: #4A55FF;
-            animation: float 2s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-
-            100% {
-                transform: translateY(0px);
-            }
-        }
-
-        .btn-primary {
-            background: #4A55FF;
-            border: none;
-            height: 50px;
+        .btn-login {
+            background-color: var(--brand-primary, #0284c7);
+            border-color: var(--brand-primary, #0284c7);
+            color: #ffffff;
+            height: 48px;
             border-radius: 8px;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
-        .btn-primary:hover {
-            background: #3440FF;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(74, 85, 255, 0.4);
+        .btn-login:hover {
+            background-color: var(--brand-primary-hover, #0369a1);
+            border-color: var(--brand-primary-hover, #0369a1);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
         }
 
         .alert {
@@ -146,73 +157,22 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
         }
 
         .form-floating label {
-            color: #6c757d;
+            color: #64748b;
         }
 
         .copyright {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-        }
-
-        h1 {
-            color: #2c3e50;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Add these new media queries for mobile responsiveness */
-        @media (max-width: 576px) {
-            .form-signin {
-                width: 95%;
-                padding: 1.5rem;
-                margin: 1rem auto;
-            }
-
-            .logo {
-                width: 60px;
-                /* Smaller logo for mobile */
-                height: 60px;
-                margin-bottom: 1rem;
-            }
-
-            h1 {
-                font-size: 1.75rem;
-                margin-bottom: 1rem;
-            }
-
-            .form-signin input {
-                height: 45px;
-                /* Slightly smaller input fields */
-            }
-
-            .btn-primary {
-                height: 45px;
-            }
-
-            .copyright {
-                font-size: 0.8rem;
-            }
-        }
-
-        /* Add this for better padding on very small devices */
-        @media (max-width: 320px) {
-            .form-signin {
-                padding: 1rem;
-            }
-
-            .form-floating {
-                margin-bottom: 0.75rem;
-            }
-        }
-
-        [data-bs-theme="dark"] .form-signin {
-            background-color: rgba(17, 24, 39, 0.95);
-            border: 1px solid #374151;
-            color: #e2e8f0;
+            color: var(--slate-500, #64748b);
+            font-size: 0.8rem;
         }
 
         [data-bs-theme="dark"] .copyright {
             color: #94a3b8 !important;
+        }
+
+        @media (max-width: 576px) {
+            .form-signin {
+                padding: 1.5rem;
+            }
         }
     </style>
     <script>
@@ -234,11 +194,12 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
     <main class="form-signin">
         <form method="POST">
             <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
-            <svg class="logo" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-            </svg>
+            <div class="brand-badge mb-3">
+                <i class="bi bi-bank fs-2"></i>
+            </div>
 
-            <h1>Welcome</h1>
+            <h4 class="brand-title mb-1">Sistem Informasi Arsip Berkas</h4>
+            <p class="text-muted small mb-4">PT BPR Bank Kulon Progo</p>
 
             <?php if ($logout_message): ?>
                 <div class="alert alert-success" role="alert">
@@ -252,8 +213,8 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
                 </div>
             <?php endif; ?>
 
-            <div class="form-floating">
-                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required autofocus>
                 <label for="username">Username</label>
             </div>
 
@@ -265,9 +226,9 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
                 </button>
             </div>
 
-            <button class="w-100 btn btn-primary mt-2" type="submit">Masuk</button>
+            <button class="w-100 btn btn-login mt-2" type="submit" id="btnSubmitLogin">Masuk</button>
 
-            <p class="mt-4 copyright text-dark">&copy; 2025</p>
+            <p class="mt-4 copyright mb-0">&copy; <?= date('Y') ?> PT BPR Bank Kulon Progo</p>
         </form>
     </main>
 
@@ -281,6 +242,16 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
                 const isPassword = passwordField.getAttribute('type') === 'password';
                 passwordField.setAttribute('type', isPassword ? 'text' : 'password');
                 toggleIcon.className = isPassword ? 'bi bi-eye-slash fs-5' : 'bi bi-eye fs-5';
+            });
+        }
+
+        // Prevent double submit with loading state
+        const loginForm = document.querySelector('form');
+        const submitBtn = document.getElementById('btnSubmitLogin');
+        if (loginForm && submitBtn) {
+            loginForm.addEventListener('submit', function() {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memverifikasi...';
             });
         }
 
