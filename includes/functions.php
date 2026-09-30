@@ -1,10 +1,10 @@
 <?php
 require_once 'config.php';
 
-$network_path_kredit = '\\\\172.16.34.5\\ftp\\BERKAS KREDIT\\';
-$network_path_ttd = '\\\\172.16.34.5\\ftp\\TTD\\';
-$network_path_sk = '\\\\172.16.34.5\\ftp\\SK\\';
-$network_path_sop = '\\\\172.16.34.5\\ftp\\SOP\\';
+$network_path_kredit = PATH_BERKAS_KREDIT;
+$network_path_ttd = PATH_TTD;
+$network_path_sk = PATH_SK;
+$network_path_sop = PATH_SOP;
 $role = $_SESSION['user']['role'] ?? '';
 
 // Handle multiple file upload berkas kredit

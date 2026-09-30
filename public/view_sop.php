@@ -22,3 +22,4 @@ if (!$sop || !file_exists($sop['file_path'])) {
 // Output PDF
 header('Content-Type: application/pdf');
 readfile($sop['file_path']);
+exit;

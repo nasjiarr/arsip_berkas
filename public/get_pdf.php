@@ -5,9 +5,9 @@ require_once '../includes/functions.php';
 check_login();
 
 $network_paths = [
-    'kredit' => '\\\\172.16.34.5\\ftp\\BERKAS KREDIT\\',
-    'sk' => '\\\\172.16.34.5\\ftp\\SK\\',
-    'sop' => '\\\\172.16.34.5\\ftp\\SOP\\'
+    'kredit' => PATH_BERKAS_KREDIT,
+    'sk'     => PATH_SK,
+    'sop'    => PATH_SOP
 ];
 
 $role = $_SESSION['user']['role'];

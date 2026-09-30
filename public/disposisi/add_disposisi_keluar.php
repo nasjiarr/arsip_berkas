@@ -6,8 +6,8 @@ check_login('sekre');
 $current_user_role = $_SESSION['user']['role']; // Pastikan session sudah diset saat login
 
 // Define network path for PDF uploads
-define('NETWORK_PDF_PATH', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\');
-define('LOCAL_IMAGE_PATH', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\');
+define('NETWORK_PDF_PATH', PATH_DISPOSISI);
+define('LOCAL_IMAGE_PATH', PATH_DISPOSISI);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
@@ -52,28 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $ext = $allowed_mime_to_ext[$mime_type];
             $filename = uniqid('disp_', true) . '.' . $ext;
 
-            // Determine upload path based on file type
-            if ($mime_type === 'application/pdf') {
-                // Create network directory if it doesn't exist
-                if (!is_dir(NETWORK_PDF_PATH)) {
-                    if (!mkdir(NETWORK_PDF_PATH, 0755, true)) {
-                        throw new Exception('Gagal membuat direktori network');
-                    }
+            // Ensure upload directory exists
+            if (!is_dir(PATH_DISPOSISI)) {
+                if (!@mkdir(PATH_DISPOSISI, 0755, true)) {
+                    throw new Exception('Gagal membuat direktori upload');
                 }
-
-                $upload_path = NETWORK_PDF_PATH . $filename;
-                $db_path = '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\' . $filename;
-            } else {
-                // For images, keep using local storage
-                if (!is_dir(LOCAL_IMAGE_PATH)) {
-                    if (!mkdir(LOCAL_IMAGE_PATH, 0755, true)) {
-                        throw new Exception('Gagal membuat direktori lokal');
-                    }
-                }
-
-                $upload_path = LOCAL_IMAGE_PATH . $filename;
-                $db_path = '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\' . $filename;
             }
+
+            $upload_path = PATH_DISPOSISI . $filename;
+            $db_path = PATH_DISPOSISI . $filename;
 
             // Move uploaded file
             if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
@@ -109,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     } catch (Exception $e) {
         $pdo->rollBack();
-        echo "Error: " . $e->getMessage();
+        $error = handle_system_error($e);
     }
 }
 ?>

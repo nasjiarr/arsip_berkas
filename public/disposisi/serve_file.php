@@ -13,9 +13,10 @@ if (!isset($_GET['path']) || empty($_GET['path'])) {
 
 $file_path = urldecode($_GET['path']);
 $normalized = str_replace('/', '\\', $file_path);
+$base_allowed = str_replace('/', '\\', PATH_DISPOSISI);
 
 // Security check - ensure path starts strictly with the network share and prevents directory traversal
-if (strpos($normalized, '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\') !== 0 || str_contains($normalized, '..')) {
+if (strpos($normalized, $base_allowed) !== 0 || str_contains($normalized, '..')) {
     header("HTTP/1.0 403 Forbidden");
     exit("Access denied");
 }

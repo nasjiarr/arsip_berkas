@@ -23,3 +23,4 @@ if (!$sk || !file_exists($sk['file_path'])) {
 // Output PDF
 header('Content-Type: application/pdf');
 readfile($sk['file_path']);
+exit;

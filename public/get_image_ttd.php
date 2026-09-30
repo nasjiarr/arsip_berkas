@@ -1,8 +1,9 @@
 <?php
+require_once '../includes/config.php';
 require_once '../includes/auth.php';
 check_login();
 
-$network_path_ttd = '\\\\172.16.34.5\\ftp\\TTD\\';
+$network_path_ttd = PATH_TTD;
 
 if (isset($_GET['norek'])) {
     $norek = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', trim($_GET['norek']));

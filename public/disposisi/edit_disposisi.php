@@ -4,8 +4,8 @@ require_once '../../includes/auth.php';
 check_login('sekre');
 
 // Define network path for PDF uploads
-define('NETWORK_PDF_PATH', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\');
-define('LOCAL_IMAGE_PATH', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\');
+define('NETWORK_PDF_PATH', PATH_DISPOSISI);
+define('LOCAL_IMAGE_PATH', PATH_DISPOSISI);
 
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     header("Location: disposisi.php");
@@ -64,28 +64,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $ext = $allowed_mime_to_ext[$mime_type];
             $filename = uniqid('disp_', true) . '.' . $ext;
 
-            // Handle upload based on file type
-            if ($mime_type === 'application/pdf') {
-                // Create network directory if doesn't exist
-                if (!is_dir(NETWORK_PDF_PATH)) {
-                    if (!mkdir(NETWORK_PDF_PATH, 0755, true)) {
-                        throw new Exception('Gagal membuat direktori network');
-                    }
+            // Ensure upload directory exists
+            if (!is_dir(PATH_DISPOSISI)) {
+                if (!@mkdir(PATH_DISPOSISI, 0755, true)) {
+                    throw new Exception('Gagal membuat direktori upload');
                 }
-
-                $upload_path = NETWORK_PDF_PATH . $filename;
-                $db_path = '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\' . $filename;
-            } else {
-                // For images, use local storage
-                if (!is_dir(LOCAL_IMAGE_PATH)) {
-                    if (!mkdir(LOCAL_IMAGE_PATH, 0755, true)) {
-                        throw new Exception('Gagal membuat direktori lokal');
-                    }
-                }
-
-                $upload_path = LOCAL_IMAGE_PATH . $filename;
-                $db_path = '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\' . $filename;
             }
+
+            $upload_path = PATH_DISPOSISI . $filename;
+            $db_path = PATH_DISPOSISI . $filename;
 
             // Delete old file if exists
             if (!empty($data['file_path'])) {
@@ -100,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Move uploaded file
             if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
-                throw new Exception('Gagal mengupload file. Pastikan folder network dapat diakses.');
+                throw new Exception('Gagal mengupload file. Pastikan folder upload dapat diakses.');
             }
         }
 
@@ -144,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     } catch (Exception $e) {
         $pdo->rollBack();
-        echo "Error: " . $e->getMessage();
+        $error = handle_system_error($e);
     }
 }
 
