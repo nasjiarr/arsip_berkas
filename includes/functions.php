@@ -5,7 +5,7 @@ $network_path_kredit = '\\\\172.16.34.5\\ftp\\BERKAS KREDIT\\';
 $network_path_ttd = '\\\\172.16.34.5\\ftp\\TTD\\';
 $network_path_sk = '\\\\172.16.34.5\\ftp\\SK\\';
 $network_path_sop = '\\\\172.16.34.5\\ftp\\SOP\\';
-$role = $_SESSION['user']['role'];
+$role = $_SESSION['user']['role'] ?? '';
 
 // Handle multiple file upload berkas kredit
 if (isset($_POST['upload']) && ($role === 'ti_admin' || $role === 'adminkredit')) {
@@ -50,7 +50,7 @@ if (isset($_POST['upload']) && ($role === 'ti_admin' || $role === 'adminkredit')
 
 // Handle file check
 if (isset($_POST['cek']) && !empty($_POST['norek'])) {
-    $norek = trim($_POST['norek']);
+    $norek = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', trim($_POST['norek']));
     // Search for PDF file in network share
     $pdf_files = glob($network_path_kredit . $norek . "*.pdf");
     if (!empty($pdf_files)) {
@@ -117,7 +117,7 @@ if (isset($_POST['upload_ttd']) && ($role === 'teller' || $role === 'ti_admin'))
 
 // Handle file check untuk spesimen tanda tangan dalam format JPG
 if (isset($_POST['cek_ttd']) && !empty($_POST['norek'])) {
-    $norek = trim($_POST['norek']);
+    $norek = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', trim($_POST['norek']));
     // Search for JPG file in network share
     $jpg_files_ttd = glob($network_path_ttd . $norek . "*.jpg");
     if (!empty($jpg_files_ttd)) {
@@ -162,7 +162,14 @@ if (isset($_POST['upload_sk']) && ($role === 'admin_dok' || $role === 'ti_admin'
             }
 
             // Buat nama file baru berdasarkan judul SK (tanpa underscore)
-            $new_file_name = trim($judul_sk_sanitized) . ".pdf";
+            $clean_title = trim($judul_sk_sanitized);
+            if (empty($clean_title)) {
+                $clean_title = 'SK_' . preg_replace('/[^a-zA-Z0-9_\-]/', '_', $nomor_sk);
+            }
+            $new_file_name = $clean_title . ".pdf";
+            if (file_exists($network_path_sk . $new_file_name)) {
+                $new_file_name = $clean_title . "_" . time() . ".pdf";
+            }
             $target_path = $network_path_sk . $new_file_name;
 
             try {
@@ -201,7 +208,7 @@ if (isset($_POST['upload_sk']) && ($role === 'admin_dok' || $role === 'ti_admin'
 
 // Handle file preview untuk SK
 if (isset($_POST['cek_sk']) && !empty($_POST['norek'])) {
-    $norek = trim($_POST['norek']);
+    $norek = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', trim($_POST['norek']));
     // Cari file PDF untuk SK
     $pdf_files_sk = glob($network_path_sk . $norek . "*.pdf");
     if (!empty($pdf_files_sk)) {
@@ -243,8 +250,15 @@ if (isset($_POST['upload_sop']) && ($role === 'admin_dok' || $role === 'ti_admin
                 continue;
             }
 
-            // Buat nama file baru berdasarkan judul SK (tanpa underscore)
-            $new_file_name = trim($judul_sop_sanitized) . ".pdf";
+            // Buat nama file baru berdasarkan judul SOP (tanpa underscore)
+            $clean_title = trim($judul_sop_sanitized);
+            if (empty($clean_title)) {
+                $clean_title = 'SOP_' . preg_replace('/[^a-zA-Z0-9_\-]/', '_', $nomor_sop);
+            }
+            $new_file_name = $clean_title . ".pdf";
+            if (file_exists($network_path_sop . $new_file_name)) {
+                $new_file_name = $clean_title . "_" . time() . ".pdf";
+            }
             $target_path = $network_path_sop . $new_file_name;
 
             try {
@@ -281,7 +295,7 @@ if (isset($_POST['upload_sop']) && ($role === 'admin_dok' || $role === 'ti_admin
 
 // Handle file preview untuk SOP
 if (isset($_POST['cek_sop']) && !empty($_POST['norek'])) {
-    $norek = trim($_POST['norek']);
+    $norek = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', trim($_POST['norek']));
     $pdf_files_sop = glob($network_path_sop . $norek . "*.pdf");
     if (!empty($pdf_files_sop)) {
         $pdf_file_sop = $pdf_files_sop[0];

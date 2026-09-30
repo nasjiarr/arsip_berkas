@@ -104,9 +104,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
 
+        // Lookup kategori_id
+        $stmt_kat = $pdo->prepare("SELECT id_kategori FROM kategori_surat WHERE kode_kategori = :kode OR id_kategori = :kode_int LIMIT 1");
+        $stmt_kat->execute([':kode' => $kode, ':kode_int' => (int)$kode]);
+        $kategori_row = $stmt_kat->fetch(PDO::FETCH_ASSOC);
+        $kategori_id = $kategori_row ? (int)$kategori_row['id_kategori'] : 23;
+
         // Update database
         $query = "UPDATE disposisi_surat SET 
                   kode = :kode, 
+                  kategori_id = :kategori_id,
                   tanggal_surat = :tanggal_surat, 
                   tanggal_masuk = :tanggal_masuk, 
                   nomer_surat = :nomer_surat, 
@@ -120,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt = $pdo->prepare($query);
         $stmt->execute([
             ':kode' => $kode,
+            ':kategori_id' => $kategori_id,
             ':tanggal_surat' => $tanggal_surat,
             ':tanggal_masuk' => $tanggal_masuk,
             ':nomer_surat' => $nomer_surat,
@@ -303,18 +311,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                 <div class="d-flex align-items-center">
                                                     <?php
                                                     $ext = strtolower(pathinfo($data['file_path'], PATHINFO_EXTENSION));
+                                                    $file_url = getFileUrl($data['file_path']);
                                                     if ($ext == 'pdf') {
                                                         echo "<i class='fas fa-file-pdf text-danger me-2 fa-2x'></i>";
                                                         echo "<div>";
                                                         echo "<h6 class='mb-0'>File PDF Saat Ini</h6>";
-                                                        echo "<a href='{$data['file_path']}' class='btn btn-sm btn-outline-primary mt-2' target='_blank'>
+                                                        echo "<a href='{$file_url}' class='btn btn-sm btn-outline-primary mt-2' target='_blank'>
                                                                 <i class='fas fa-eye me-1'></i>Lihat PDF
                                                               </a>";
                                                         echo "</div>";
                                                     } elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
                                                         echo "<div class='text-center'>";
                                                         echo "<h6 class='mb-2'>File Gambar Saat Ini</h6>";
-                                                        echo "<img src='{$data['file_path']}' class='img-thumbnail' style='max-height: 150px;' 
+                                                        echo "<img src='{$file_url}' class='img-thumbnail' style='max-height: 150px;' 
                                                                 onclick='showImagePreview(this.src)' style='cursor: pointer;'>";
                                                         echo "</div>";
                                                     }

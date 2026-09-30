@@ -31,7 +31,7 @@ CREATE TABLE `disposisi_keluar` (
   `id` int NOT NULL,
   `no` int DEFAULT NULL,
   `kode` varchar(50) DEFAULT NULL,
-  `kategori_id` int NOT NULL,
+  `kategori_id` int DEFAULT '23',
   `tanggal` date DEFAULT NULL,
   `nomor_surat` varchar(100) DEFAULT NULL,
   `perihal` text,
@@ -56,15 +56,16 @@ CREATE TABLE `disposisi_surat` (
   `id` int NOT NULL,
   `no` int DEFAULT NULL,
   `kode` varchar(50) DEFAULT NULL,
-  `kategori_id` int NOT NULL,
+  `kategori_id` int DEFAULT '23',
   `tanggal_surat` date DEFAULT NULL,
   `tanggal_masuk` date DEFAULT NULL,
   `nomer_surat` varchar(100) DEFAULT NULL,
   `dari` varchar(255) DEFAULT NULL,
   `perihal` text,
+  `instruksi` text,
   `instruksi_direksi_umum` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `instruksi_direksi_bisnis` text NOT NULL,
-  `instruksi_direksi_kepatuhan` text NOT NULL,
+  `instruksi_direksi_bisnis` text,
+  `instruksi_direksi_kepatuhan` text,
   `diteruskan` varchar(255) DEFAULT NULL,
   `file_path` varchar(255) DEFAULT NULL,
   `status` text,
@@ -75,12 +76,12 @@ CREATE TABLE `disposisi_surat` (
 -- Dumping data for table `disposisi_surat`
 --
 
-INSERT INTO `disposisi_surat` (`id`, `no`, `kode`, `kategori_id`, `tanggal_surat`, `tanggal_masuk`, `nomer_surat`, `dari`, `perihal`, `instruksi_direksi_umum`, `instruksi_direksi_bisnis`, `instruksi_direksi_kepatuhan`, `diteruskan`, `file_path`, `status`, `kabag_opinion`) VALUES
-(535, 13, '001', 1, '2025-02-04', '2025-02-11', '1112', 'BI', 'Laporan Keuangan', 'acc', '', '', 'kabag_operasional', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\67bfbc3ec1c16.pdf', '[\"kabag_operasional\"]', NULL),
-(536, 14, '001', 1, '2025-02-05', '2025-02-14', '1111', 'Bank Indonesia', 'Laporan Keuangan', 'acc', 'acc', 'acc', 'kabag_satker_kepatuhan,kabag_administrasi_umum,kabag_operasional', NULL, '[\"kabag_satker_kepatuhan\",\"kabag_administrasi_umum\",\"kabag_operasional\"]', NULL),
-(537, 15, '019', 19, '2025-02-05', '2025-02-11', '11144', 'Asuransi Anda', 'Laporan', 'acc', 'acc', 'acc', 'kabag_marketing', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\67c1100ae0877.pdf', '[\"kabag_marketing\"]', NULL),
-(538, 16, '007', 7, '2025-02-11', '2025-02-17', '1121', 'Kecamatan Pengasih', 'Kerja Sama', 'acc', 'acc', 'acc', 'kabag_satker_kepatuhan,kabag_administrasi_umum', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\67c11027250fa.pdf', '[\"kabag_satker_kepatuhan\",\"kabag_administrasi_umum\"]', NULL),
-(539, 17, '010', 10, '2025-02-25', '2025-02-27', '2', 'BMPD', 'BMPDDD', '', '', '', NULL, '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\67c150fe45e90.png', 'Belum Diterima', NULL);
+INSERT INTO `disposisi_surat` (`id`, `no`, `kode`, `kategori_id`, `tanggal_surat`, `tanggal_masuk`, `nomer_surat`, `dari`, `perihal`, `instruksi`, `instruksi_direksi_umum`, `instruksi_direksi_bisnis`, `instruksi_direksi_kepatuhan`, `diteruskan`, `file_path`, `status`, `kabag_opinion`) VALUES
+(535, 13, '001', 1, '2025-02-04', '2025-02-11', '1112', 'BI', 'Laporan Keuangan', 'acc', 'acc', '', '', 'kabag_operasional', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\67bfbc3ec1c16.pdf', '[\"kabag_operasional\"]', NULL),
+(536, 14, '001', 1, '2025-02-05', '2025-02-14', '1111', 'Bank Indonesia', 'Laporan Keuangan', 'acc', 'acc', 'acc', 'acc', 'kabag_satker_kepatuhan,kabag_administrasi_umum,kabag_operasional', NULL, '[\"kabag_satker_kepatuhan\",\"kabag_administrasi_umum\",\"kabag_operasional\"]', NULL),
+(537, 15, '019', 19, '2025-02-05', '2025-02-11', '11144', 'Asuransi Anda', 'Laporan', 'acc', 'acc', 'acc', 'acc', 'kabag_marketing', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\67c1100ae0877.pdf', '[\"kabag_marketing\"]', NULL),
+(538, 16, '007', 7, '2025-02-11', '2025-02-17', '1121', 'Kecamatan Pengasih', 'Kerja Sama', 'acc', 'acc', 'acc', 'acc', 'kabag_satker_kepatuhan,kabag_administrasi_umum', '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\67c11027250fa.pdf', '[\"kabag_satker_kepatuhan\",\"kabag_administrasi_umum\"]', NULL),
+(539, 17, '010', 10, '2025-02-25', '2025-02-27', '2', 'BMPD', 'BMPDDD', '', '', '', '', NULL, '\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\67c150fe45e90.png', 'Belum Diterima', NULL);
 
 -- --------------------------------------------------------
 

@@ -85,14 +85,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
 
+        // Lookup kategori_id
+        $stmt_kat = $pdo->prepare("SELECT id_kategori FROM kategori_surat WHERE kode_kategori = :kode OR id_kategori = :kode_int LIMIT 1");
+        $stmt_kat->execute([':kode' => $kode, ':kode_int' => (int)$kode]);
+        $kategori_row = $stmt_kat->fetch(PDO::FETCH_ASSOC);
+        $kategori_id = $kategori_row ? (int)$kategori_row['id_kategori'] : 23;
+
         // Insert into database
-        $query = "INSERT INTO disposisi_surat (no, kode, tanggal_surat, tanggal_masuk, nomer_surat, dari, perihal, instruksi, diteruskan, file_path) 
-                 VALUES (:no, :kode, :tanggal_surat, :tanggal_masuk, :nomer_surat, :dari, :perihal, :instruksi, :diteruskan, :file_path)";
+        $query = "INSERT INTO disposisi_surat (no, kode, kategori_id, tanggal_surat, tanggal_masuk, nomer_surat, dari, perihal, instruksi, diteruskan, file_path) 
+                 VALUES (:no, :kode, :kategori_id, :tanggal_surat, :tanggal_masuk, :nomer_surat, :dari, :perihal, :instruksi, :diteruskan, :file_path)";
 
         $stmt = $pdo->prepare($query);
         $stmt->execute([
             ':no' => $next_no,
             ':kode' => $kode,
+            ':kategori_id' => $kategori_id,
             ':tanggal_surat' => $tanggal_surat,
             ':tanggal_masuk' => $tanggal_masuk,
             ':nomer_surat' => $nomer_surat,

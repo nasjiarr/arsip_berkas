@@ -26,6 +26,9 @@ if (!$data) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        die('Token keamanan tidak valid.');
+    }
     try {
         $pdo->beginTransaction();
 
@@ -38,18 +41,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $db_path = $data['file_path'];
 
         // Handle file upload jika ada
-        if (isset($_FILES['file']) && $_FILES['file']['error'] == 0) {
+        if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['file'];
-            $file_type = $file['type'];
 
-            if (!in_array($file_type, ALLOWED_TYPES)) {
-                throw new Exception('Tipe file tidak diizinkan');
+            // ponytail: validate real MIME type using finfo; extend map if other formats needed.
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime_type = $finfo->file($file['tmp_name']);
+
+            $allowed_mime_to_ext = [
+                'application/pdf' => 'pdf',
+                'image/jpeg'      => 'jpg',
+                'image/png'       => 'png',
+                'image/gif'       => 'gif',
+            ];
+
+            if (!array_key_exists($mime_type, $allowed_mime_to_ext)) {
+                throw new Exception('Tipe file tidak diizinkan. Hanya PDF dan Gambar (JPG, PNG, GIF) yang diperbolehkan.');
             }
 
-            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $filename = uniqid() . '.' . $ext;
+            $ext = $allowed_mime_to_ext[$mime_type];
+            $filename = uniqid('disp_', true) . '.' . $ext;
             // Handle upload based on file type
-            if ($file_type == 'application/pdf') {
+            if ($mime_type === 'application/pdf') {
                 // Create network directory if doesn't exist
                 if (!is_dir(NETWORK_PDF_PATH)) {
                     if (!mkdir(NETWORK_PDF_PATH, 0755, true)) {
@@ -88,12 +101,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
 
+        // Lookup kategori_id
+        $stmt_kat = $pdo->prepare("SELECT id_kategori FROM kategori_surat WHERE kode_kategori = :kode OR id_kategori = :kode_int LIMIT 1");
+        $stmt_kat->execute([':kode' => $kode, ':kode_int' => (int)$kode]);
+        $kategori_row = $stmt_kat->fetch(PDO::FETCH_ASSOC);
+        $kategori_id = $kategori_row ? (int)$kategori_row['id_kategori'] : 23;
+
         // Update data di database
-        $query = "UPDATE disposisi_keluar SET kode = :kode, tanggal = :tanggal,
+        $query = "UPDATE disposisi_keluar SET kode = :kode, kategori_id = :kategori_id, tanggal = :tanggal,
                   nomor_surat = :nomor_surat, perihal = :perihal, ke = :ke, file_path = :file_path WHERE id = :id";
 
         $stmt = $pdo->prepare($query);
         $stmt->bindParam(':kode', $kode);
+        $stmt->bindParam(':kategori_id', $kategori_id, PDO::PARAM_INT);
         $stmt->bindParam(':tanggal', $tanggal);
         $stmt->bindParam(':nomor_surat', $nomor_surat);
         $stmt->bindParam(':perihal', $perihal);
@@ -186,6 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                     <div class="card-body p-4">
                         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                             <div class="row g-4">
                                 <!-- Kode & Nomor Surat -->
                                 <div class="col-md-6">
@@ -248,18 +269,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                 <div class="d-flex align-items-center">
                                                     <?php
                                                     $ext = strtolower(pathinfo($data['file_path'], PATHINFO_EXTENSION));
+                                                    $file_url = getFileUrl($data['file_path']);
                                                     if ($ext == 'pdf') {
                                                         echo "<i class='fas fa-file-pdf text-danger me-2 fa-2x'></i>";
                                                         echo "<div>";
                                                         echo "<h6 class='mb-0'>File PDF Saat Ini</h6>";
-                                                        echo "<a href='{$data['file_path']}' class='btn btn-sm btn-outline-primary mt-2' target='_blank'>
+                                                        echo "<a href='{$file_url}' class='btn btn-sm btn-outline-primary mt-2' target='_blank'>
                                                                 <i class='fas fa-eye me-1'></i>Lihat PDF
                                                               </a>";
                                                         echo "</div>";
                                                     } elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
                                                         echo "<div class='text-center'>";
                                                         echo "<h6 class='mb-2'>File Gambar Saat Ini</h6>";
-                                                        echo "<img src='{$data['file_path']}' class='img-thumbnail' style='max-height: 150px;' 
+                                                        echo "<img src='{$file_url}' class='img-thumbnail' style='max-height: 150px;' 
                                                                 onclick='showImagePreview(this.src)' style='cursor: pointer;'>";
                                                         echo "</div>";
                                                     }
