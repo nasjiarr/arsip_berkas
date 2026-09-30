@@ -1,0 +1,33 @@
+<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke="rgba(2, 132, 199, 0.16)" stroke-width="0.9">
+    <!-- Center Geblek (45 deg) -->
+    <circle cx="23" cy="23" r="6.5"/>
+    <circle cx="23" cy="23" r="2.8" stroke-width="0.6"/>
+    <circle cx="23" cy="23" r="1.2" fill="rgba(2, 132, 199, 0.18)"/>
+    <circle cx="37" cy="37" r="6.5"/>
+    <circle cx="37" cy="37" r="2.8" stroke-width="0.6"/>
+    <circle cx="37" cy="37" r="1.2" fill="rgba(2, 132, 199, 0.18)"/>
+    
+    <!-- Corner Gebleks (Wrapping) -->
+    <!-- Top-Left & Bottom-Right -->
+    <circle cx="0" cy="0" r="6.5"/>
+    <circle cx="60" cy="0" r="6.5"/>
+    <circle cx="0" cy="60" r="6.5"/>
+    <circle cx="60" cy="60" r="6.5"/>
+    
+    <circle cx="0" cy="0" r="2.8" stroke-width="0.6"/>
+    <circle cx="60" cy="0" r="2.8" stroke-width="0.6"/>
+    <circle cx="0" cy="60" r="2.8" stroke-width="0.6"/>
+    <circle cx="60" cy="60" r="2.8" stroke-width="0.6"/>
+    
+    <!-- Secondary Counter-Diagonal Geblek (-45 deg) -->
+    <circle cx="15" cy="45" r="5.5"/>
+    <circle cx="15" cy="45" r="2" stroke-width="0.5"/>
+    <circle cx="45" cy="15" r="5.5"/>
+    <circle cx="45" cy="15" r="2" stroke-width="0.5"/>
+    
+    <!-- Renteng Interlocking Links -->
+    <path d="M0 0 Q10 20 23 23 M37 37 Q50 40 60 60" stroke-width="0.6" stroke-dasharray="2 2"/>
+    <path d="M60 0 Q40 10 45 15 M15 45 Q20 50 0 60" stroke-width="0.6" stroke-dasharray="2 2"/>
+  </g>
+</svg>

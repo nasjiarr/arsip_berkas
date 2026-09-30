@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
@@ -68,43 +68,40 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
             padding: 2rem 1rem;
             background-color: #f8fafc !important;
             background-image: 
-                radial-gradient(circle 650px at 50% 50%, rgba(2, 132, 199, 0.1) 0%, transparent 75%),
-                url("assets/images/bank-seal-light.svg") !important;
-            background-size: 100% 100%, 820px 820px !important;
-            background-position: center center, center center !important;
-            background-repeat: no-repeat, no-repeat !important;
+                radial-gradient(circle 700px at 50% 50%, rgba(2, 132, 199, 0.08) 0%, transparent 75%),
+                url("assets/images/batik-micro-light.svg") !important;
+            background-size: 100% 100%, 60px 60px !important;
+            background-repeat: no-repeat, repeat !important;
+            font-family: var(--font-sans);
             transition: background-color 0.3s ease;
         }
 
         [data-bs-theme="dark"] body.login-page {
             background-color: #0b0f19 !important;
             background-image: 
-                radial-gradient(circle 650px at 50% 50%, rgba(2, 132, 199, 0.22) 0%, transparent 75%),
-                url("assets/images/bank-seal-dark.svg") !important;
-            background-size: 100% 100%, 820px 820px !important;
-            background-position: center center, center center !important;
-            background-repeat: no-repeat, no-repeat !important;
+                radial-gradient(circle 700px at 50% 50%, rgba(2, 132, 199, 0.2) 0%, transparent 75%),
+                url("assets/images/batik-micro-dark.svg") !important;
+            background-size: 100% 100%, 60px 60px !important;
+            background-repeat: no-repeat, repeat !important;
         }
 
         .form-signin {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             width: 100%;
             max-width: 420px;
-            padding: 2.25rem;
-            border-radius: 16px;
+            padding: 2.5rem 2.25rem;
+            border-radius: 20px;
             border: 1px solid rgba(226, 232, 240, 0.9);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 25px 35px -10px rgba(0, 0, 0, 0.07), 0 10px 15px -5px rgba(0, 0, 0, 0.03);
             transition: all 0.3s ease;
         }
 
         [data-bs-theme="dark"] .form-signin {
-            background-color: rgba(15, 23, 42, 0.92) !important;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(56, 189, 248, 0.22) !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 25px rgba(2, 132, 199, 0.12) !important;
+            background-color: rgba(17, 24, 39, 0.94);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 25px rgba(2, 132, 199, 0.12);
             color: #e2e8f0;
         }
 
@@ -131,40 +128,40 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
         }
 
         [data-bs-theme="dark"] .brand-title {
-            color: #f8fafc !important;
+            color: #f8fafc;
         }
 
-        .form-signin .form-floating {
-            margin-bottom: 1rem;
+        .form-floating label {
+            color: #64748b;
         }
 
-        .form-signin input {
+        [data-bs-theme="dark"] .form-floating label {
+            color: #94a3b8;
+        }
+
+        .form-signin input.form-control {
             height: 50px;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid #cbd5e1;
             transition: all 0.2s ease;
         }
 
-        .form-signin input:focus {
+        .form-signin input.form-control:focus {
             border-color: var(--brand-primary, #0284c7);
             box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.2);
         }
 
-        [data-bs-theme="dark"] .form-signin input {
-            background-color: #1e293b !important;
-            border-color: #334155 !important;
-            color: #f8fafc !important;
+        [data-bs-theme="dark"] .form-signin input.form-control {
+            background-color: #1e293b;
+            border-color: #334155;
+            color: #f8fafc;
         }
 
-        [data-bs-theme="dark"] .form-signin input:focus {
-            background-color: #1e293b !important;
-            border-color: var(--brand-primary, #0284c7) !important;
-            color: #ffffff !important;
-            box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.25) !important;
-        }
-
-        [data-bs-theme="dark"] .form-floating label {
-            color: #94a3b8 !important;
+        [data-bs-theme="dark"] .form-signin input.form-control:focus {
+            background-color: #1e293b;
+            border-color: var(--brand-primary, #0284c7);
+            color: #ffffff;
+            box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.25);
         }
 
         .btn-login {
@@ -172,7 +169,7 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
             border-color: var(--brand-primary, #0284c7);
             color: #ffffff;
             height: 48px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 600;
             transition: all 0.2s ease;
         }
@@ -181,34 +178,18 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
             background-color: var(--brand-primary-hover, #0369a1);
             border-color: var(--brand-primary-hover, #0369a1);
             color: #ffffff;
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
         }
 
-        .alert {
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-floating label {
-            color: #64748b;
-        }
-
-        .copyright {
-            color: var(--slate-500, #64748b);
-            font-size: 0.8rem;
-        }
-
-        [data-bs-theme="dark"] .copyright {
-            color: #94a3b8 !important;
+        [data-bs-theme="dark"] #themeToggleBtn {
+            background-color: rgba(30, 41, 59, 0.8) !important;
+            border-color: #334155 !important;
+            color: #e2e8f0 !important;
         }
 
         @media (max-width: 576px) {
-            body.login-page,
-            [data-bs-theme="dark"] body.login-page {
-                background-size: 100% 100%, 520px 520px !important;
-            }
             .form-signin {
-                padding: 1.5rem;
+                padding: 1.75rem 1.5rem;
             }
         }
     </style>
@@ -220,7 +201,8 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
     </script>
 </head>
 
-<body class="text-center login-page">
+<body class="login-page text-center">
+    <!-- Tombol Ganti Tema -->
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill d-flex align-items-center gap-1 shadow-sm bg-body bg-opacity-75" id="themeToggleBtn" title="Ganti Tema">
             <i class="bi bi-moon-stars" id="themeIcon"></i>
@@ -228,9 +210,11 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
         </button>
     </div>
 
+    <!-- Kartu Form Login -->
     <main class="form-signin">
         <form method="POST">
             <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
+
             <div class="brand-badge mb-3">
                 <i class="bi bi-bank fs-2"></i>
             </div>
@@ -239,33 +223,37 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
             <p class="text-muted small mb-4">PT BPR Bank Kulon Progo</p>
 
             <?php if ($logout_message): ?>
-                <div class="alert alert-success" role="alert">
-                    <?php echo $logout_message; ?>
+                <div class="alert alert-success d-flex align-items-center gap-2 py-2 text-start" role="alert">
+                    <i class="bi bi-check-circle-fill fs-5"></i>
+                    <span><?php echo $logout_message; ?></span>
                 </div>
             <?php endif; ?>
 
             <?php if ($error): ?>
-                <div class="alert alert-danger" role="alert">
-                    <?php echo $error; ?>
+                <div class="alert alert-danger d-flex align-items-center gap-2 py-2 text-start" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <span><?php echo $error; ?></span>
                 </div>
             <?php endif; ?>
 
             <div class="form-floating mb-3">
                 <input type="text" class="form-control" id="username" name="username" placeholder="Username" required autofocus>
-                <label for="username">Username</label>
+                <label for="username"><i class="bi bi-person me-1"></i>Username</label>
             </div>
 
-            <div class="form-floating position-relative mb-3">
+            <div class="form-floating position-relative mb-4">
                 <input type="password" class="form-control pe-5" id="password" name="password" placeholder="Password" required autocomplete="current-password">
-                <label for="password">Password</label>
+                <label for="password"><i class="bi bi-lock me-1"></i>Password</label>
                 <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted text-decoration-none pe-3 z-3" id="togglePassword" aria-label="Lihat password" style="border:none; background:transparent;">
                     <i class="bi bi-eye fs-5" id="togglePasswordIcon"></i>
                 </button>
             </div>
 
-            <button class="w-100 btn btn-login mt-2" type="submit" id="btnSubmitLogin">Masuk</button>
+            <button class="w-100 btn btn-login py-2.5 fw-semibold" type="submit" id="btnSubmitLogin">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Masuk
+            </button>
 
-            <p class="mt-4 copyright mb-0">&copy; <?= date('Y') ?> PT BPR Bank Kulon Progo</p>
+            <p class="mt-4 copyright text-muted small mb-0">&copy; <?= date('Y') ?> PT BPR Bank Kulon Progo</p>
         </form>
     </main>
 
