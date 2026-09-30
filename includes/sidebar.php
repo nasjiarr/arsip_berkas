@@ -25,19 +25,21 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
 <!-- Sidebar -->
-<div class="sidebar bg-white p-3 d-flex flex-column justify-content-between" id="sidebar">
+<div class="sidebar p-3 d-flex flex-column justify-content-between" id="sidebar">
     <div>
         <div class="d-flex align-items-center mb-3">
-            <i class="bi bi-bank fs-2 text-primary me-2"></i>
+            <div class="rounded-3 d-flex align-items-center justify-content-center me-2" style="width: 38px; height: 38px; background: rgba(2, 132, 199, 0.2); color: #38bdf8;">
+                <i class="bi bi-bank fs-4"></i>
+            </div>
             <div>
-                <h5 class="mb-0 fw-bold text-dark" style="font-size: 1rem; line-height: 1.2;">Sistem Informasi</h5>
-                <small class="text-muted" style="font-size: 0.75rem;">Bank Kulon Progo</small>
+                <h5 class="mb-0 brand-title" style="font-size: 0.95rem; line-height: 1.2;">Sistem Informasi</h5>
+                <small class="brand-subtitle" style="font-size: 0.72rem;">Bank Kulon Progo</small>
             </div>
         </div>
 
-        <div class="px-2 py-1 mb-3 bg-light rounded text-muted small d-flex align-items-center justify-content-between border">
-            <span class="text-truncate me-1"><i class="bi bi-person-circle me-1 text-primary"></i><?= htmlspecialchars($user_name) ?></span>
-            <span class="badge bg-secondary-subtle text-secondary border text-uppercase" style="font-size: 0.65rem;"><?= htmlspecialchars($user_role) ?></span>
+        <div class="px-2 py-1 mb-3 user-badge rounded small d-flex align-items-center justify-content-between border">
+            <span class="text-truncate me-1"><i class="bi bi-person-circle me-1" style="color: #38bdf8;"></i><?= htmlspecialchars($user_name) ?></span>
+            <span class="badge border text-uppercase" style="font-size: 0.65rem; background: rgba(255,255,255,0.08); color: #cbd5e1;"><?= htmlspecialchars($user_role) ?></span>
         </div>
 
         <hr class="my-2">
@@ -45,25 +47,25 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
         <ul class="nav flex-column gap-1">
             <?php if ($user_role === 'sekre'): ?>
                 <li class="nav-item">
-                    <a class="nav-link rounded px-3 py-2 <?= $is_active_disp_masuk ? 'active text-white bg-primary' : 'text-dark' ?>" href="<?= $disp_url ?>disposisi.php">
+                    <a class="nav-link <?= $is_active_disp_masuk ? 'active' : '' ?>" href="<?= $disp_url ?>disposisi.php">
                         <i class="bi bi-envelope-arrow-down me-2"></i> Surat Masuk
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link rounded px-3 py-2 <?= $is_active_disp_keluar ? 'active text-white bg-primary' : 'text-dark' ?>" href="<?= $disp_url ?>disposisi_keluar.php">
+                    <a class="nav-link <?= $is_active_disp_keluar ? 'active' : '' ?>" href="<?= $disp_url ?>disposisi_keluar.php">
                         <i class="bi bi-envelope-arrow-up me-2"></i> Surat Keluar
                     </a>
                 </li>
             <?php else: ?>
                 <li class="nav-item">
-                    <a class="nav-link rounded px-3 py-2 <?= $is_active_dashboard ? 'active text-white bg-primary' : 'text-dark' ?>" href="<?= $base_url ?>dashboard.php">
+                    <a class="nav-link <?= $is_active_dashboard ? 'active' : '' ?>" href="<?= $base_url ?>dashboard.php">
                         <i class="bi bi-speedometer2 me-2"></i> Dashboard
                     </a>
                 </li>
             <?php endif; ?>
 
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle rounded px-3 py-2 <?= $is_active_berkas_dropdown ? 'active text-white bg-primary' : 'text-dark' ?>" href="#" id="dropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <a class="nav-link dropdown-toggle <?= $is_active_berkas_dropdown ? 'active' : '' ?>" href="#" id="dropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-folder2-open me-2"></i> Cek Berkas
                 </a>
                 <ul class="dropdown-menu shadow border-0" aria-labelledby="dropdownMenuLink">
@@ -79,7 +81,7 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
 
             <?php if ($user_role === 'ti_admin'): ?>
                 <li class="nav-item">
-                    <a class="nav-link rounded px-3 py-2 <?= $is_active_user ? 'active text-white bg-primary' : 'text-dark' ?>" href="<?= $base_url ?>add_user.php">
+                    <a class="nav-link <?= $is_active_user ? 'active' : '' ?>" href="<?= $base_url ?>add_user.php">
                         <i class="bi bi-people me-2"></i> Kelola User
                     </a>
                 </li>
@@ -89,8 +91,8 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
 
     <div>
         <hr class="my-2">
-        <a class="nav-link text-danger fw-bold rounded px-3 py-2 d-flex align-items-center" href="<?= $base_url ?>logout.php">
-            <i class="bi bi-box-arrow-right text-danger me-2 fs-5"></i> Keluar
+        <a class="nav-link text-danger fw-semibold d-flex align-items-center" href="<?= $base_url ?>logout.php">
+            <i class="bi bi-box-arrow-right me-2 fs-5"></i> Keluar
         </a>
     </div>
 </div>

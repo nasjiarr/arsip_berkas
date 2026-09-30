@@ -23,8 +23,16 @@ check_login();
         <div class="row g-0">
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 content">
-                <div class="user-welcome">
-                    <h1>Selamat Datang, <?= htmlspecialchars($_SESSION['user']['username']); ?></h1>
+                <div class="user-welcome d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div>
+                        <h1>Selamat Datang, <?= htmlspecialchars($_SESSION['user']['username']); ?></h1>
+                        <p class="mb-0 text-white-50 small mt-1">Sistem Manajemen Berkas & Disposisi Surat PT BPR Bank Kulon Progo</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge border py-2 px-3" style="background: rgba(255,255,255,0.12); color: #e0f2fe; font-size: 0.8rem;">
+                            <i class="bi bi-shield-check me-1"></i>Role: <?= strtoupper(htmlspecialchars($role)) ?>
+                        </span>
+                    </div>
                 </div>
 
                 <div class="row">

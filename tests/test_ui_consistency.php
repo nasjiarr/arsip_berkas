@@ -39,10 +39,12 @@ foreach ($checked_files as $file) {
 }
 echo "PASS: Redundant Font Awesome and duplicate Bootstrap Icons 1.7.2 completely removed.\n";
 
-// 4. Test typography & style.css
+// 4. Test typography, palette & style.css
 $css_content = file_get_contents($base_dir . '/public/assets/style.css');
 assert(strpos($css_content, 'Inter') !== false, 'style.css must configure modern Inter typography');
 assert(strpos($css_content, '.table-disposisi') !== false, 'style.css must have .table-disposisi styles');
-echo "PASS: Typography and table styling present in style.css.\n";
+assert(strpos($css_content, '--brand-primary') !== false, 'style.css must define brand palette variables');
+assert(strpos($css_content, '--slate-900') !== false, 'style.css must define slate palette variables');
+echo "PASS: Typography, corporate palette variables and table styling present in style.css.\n";
 
 echo "ALL UI CONSISTENCY TESTS PASSED (100%)\n";
