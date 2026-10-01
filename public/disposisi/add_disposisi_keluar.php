@@ -1,7 +1,11 @@
 <?php
 require_once '../../includes/config.php';
 require_once '../../includes/auth.php';
-check_login('sekre');
+check_login();
+if (!in_array($_SESSION['user']['role'] ?? '', ['sekre', 'ti_admin'])) {
+    http_response_code(403);
+    exit('Akses ditolak.');
+}
 
 $current_user_role = $_SESSION['user']['role']; // Pastikan session sudah diset saat login
 

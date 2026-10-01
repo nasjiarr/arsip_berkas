@@ -145,7 +145,7 @@ function getNamaBulan($bulan)
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h1 class="h2">Disposisi Surat Keluar</h1>
                         <div class="d-flex gap-2">
-                            <?php if ($role === 'sekre'): ?>
+                            <?php if ($role === 'sekre' || $role === 'ti_admin'): ?>
                                 <a href="export_excel_keluar.php<?= !empty($_GET) ? '?' . http_build_query($_GET) : '' ?>" class="btn btn-success">
                                     <i class="fas fa-file-excel me-1"></i> Export Excel
                                 </a>

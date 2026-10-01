@@ -109,4 +109,29 @@ foreach ($rows as $no_val) {
 $pdo->rollBack();
 echo "PASS: Transactional sequence gap closure verified (strictly consecutive 1..N).\n";
 
-echo "ALL DISPOSISI TESTS (CATEGORY, EXPORT SEARCH, AUTO RENUMBER) PASSED (100%)\n";
+// 10. Test Role Authorization Harmonization (sekre & ti_admin)
+$role_guarded_files = [
+    'add_disposisi.php' => $base_dir . '/public/disposisi/add_disposisi.php',
+    'add_disposisi_keluar.php' => $base_dir . '/public/disposisi/add_disposisi_keluar.php',
+    'edit_disposisi.php' => $base_dir . '/public/disposisi/edit_disposisi.php',
+    'edit_disposisi_keluar.php' => $base_dir . '/public/disposisi/edit_disposisi_keluar.php',
+    'delete_disposisi.php' => $base_dir . '/public/disposisi/delete_disposisi.php',
+    'delete_disposisi_keluar.php' => $base_dir . '/public/disposisi/delete_disposisi_keluar.php',
+    'export_excel.php' => $base_dir . '/public/disposisi/export_excel.php',
+    'export_excel_keluar.php' => $base_dir . '/public/disposisi/export_excel_keluar.php',
+];
+
+foreach ($role_guarded_files as $name => $path) {
+    $code = file_get_contents($path);
+    assert(strpos($code, "'ti_admin'") !== false, "$name must allow ti_admin role access");
+    assert(strpos($code, "'sekre'") !== false, "$name must allow sekre role access");
+}
+
+$disp_content = file_get_contents($base_dir . '/public/disposisi/disposisi.php');
+assert(strpos($disp_content, "(\$role === 'sekre' || \$role === 'ti_admin')") !== false, 'disposisi.php header buttons must allow ti_admin');
+
+$disp_k_content = file_get_contents($base_dir . '/public/disposisi/disposisi_keluar.php');
+assert(strpos($disp_k_content, "(\$role === 'sekre' || \$role === 'ti_admin')") !== false, 'disposisi_keluar.php header buttons must allow ti_admin');
+echo "PASS: Role harmonization verified across all disposisi mutation handlers and view actions.\n";
+
+echo "ALL DISPOSISI TESTS (CATEGORY, EXPORT SEARCH, AUTO RENUMBER, ROLE HARMONIZATION) PASSED (100%)\n";
