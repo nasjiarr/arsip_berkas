@@ -10,7 +10,7 @@ if (!$sop_id) {
 }
 
 // Query untuk mengambil file PDF
-$query = "SELECT file_path FROM sop_table WHERE id = ?";
+$query = "SELECT file_path, nomor_sop FROM sop_table WHERE id = ?";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$sop_id]);
 $sop = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -19,7 +19,12 @@ if (!$sop || !file_exists($sop['file_path'])) {
     die('File not found');
 }
 
-// Output PDF
-header('Content-Type: application/pdf');
+$is_download = !empty($_GET['download']);
+$filename = basename($sop['file_path']);
+$mime = mime_content_type($sop['file_path']) ?: 'application/pdf';
+
+header('Content-Type: ' . $mime);
+header('Content-Disposition: ' . ($is_download ? 'attachment' : 'inline') . '; filename="' . $filename . '"');
+header('Content-Length: ' . filesize($sop['file_path']));
 readfile($sop['file_path']);
 exit;

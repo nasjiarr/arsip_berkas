@@ -16,6 +16,8 @@ $pages_with_sidebar = [
     $base_dir . '/public/dashboard.php',
     $base_dir . '/public/cek_sk.php',
     $base_dir . '/public/cek_sop.php',
+    $base_dir . '/public/detail_sk.php',
+    $base_dir . '/public/detail_sop.php',
     $base_dir . '/public/add_user.php',
     $base_dir . '/public/disposisi/disposisi.php',
     $base_dir . '/public/disposisi/disposisi_keluar.php'

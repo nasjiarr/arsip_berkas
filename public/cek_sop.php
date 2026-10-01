@@ -3,15 +3,17 @@ require_once '../includes/auth.php';
 require_once '../includes/functions.php';
 check_login();
 
+$user_role = $_SESSION['user']['role'] ?? '';
+$can_manage = in_array($user_role, ['admin_dok', 'ti_admin']);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cek SOP</title>
+    <title>Pangkalan Data Standar Operasional Prosedur (SOP) - Bank Kulon Progo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="assets/style.css">
@@ -24,223 +26,512 @@ check_login();
         <div class="row g-0">
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 content">
-                <div class="user-welcome">
-                    <h1>Selamat Datang, <?= htmlspecialchars($_SESSION['user']['username']); ?></h1>
+                <!-- Page Header -->
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                    <div>
+                        <h4 class="mb-1 fw-bold d-flex align-items-center">
+                            <i class="bi bi-file-earmark-ruled text-warning me-2"></i>
+                            Pangkalan Data Standar Operasional Prosedur (SOP)
+                        </h4>
+                        <p class="text-muted small mb-0">Daftar pedoman dan standar operasional kerja PT BPR Bank Kulon Progo</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill fs-7" id="totalBadge">
+                            <i class="bi bi-database me-1"></i> <span id="totalCount">Memuat...</span> Prosedur
+                        </span>
+                        <?php if ($can_manage): ?>
+                            <a href="dashboard.php?tab=regulasi" class="btn btn-warning btn-sm d-flex align-items-center gap-1 shadow-sm text-dark">
+                                <i class="bi bi-cloud-arrow-up"></i> Upload SOP Baru
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
-                <!-- Alert Container -->
-                <div id="alertContainer"></div>
-
-                <!-- Cek SOP -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-header bg-primary text-white d-flex align-items-center">
-                                <i class="bi bi-search me-2"></i>
-                                <h3 class="card-title mb-0">Cek SOP</h3>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="search-container">
-                                    <input
-                                        type="text"
-                                        id="searchInputSOP"
-                                        class="form-control form-control-lg"
-                                        placeholder="Ketik kata kunci..."
-                                        style="font-size: 14px;"
-                                        autocomplete="off">
-                                    <div id="searchSuggestionsSOP" class="search-suggestions"></div>
+                <!-- Search & Filter Toolbar -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-3">
+                        <div class="row g-2 align-items-center">
+                            <!-- Search Bar with Icon and Clear Button -->
+                            <div class="col-md-8 col-lg-7">
+                                <div class="position-relative">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-transparent border-end-0 text-muted">
+                                            <i class="bi bi-search" id="searchIcon"></i>
+                                            <span class="spinner-border spinner-border-sm text-warning d-none" id="searchSpinner" role="status"></span>
+                                        </span>
+                                        <input
+                                            type="text"
+                                            id="searchInputSOP"
+                                            class="form-control border-start-0 border-end-0 ps-0"
+                                            placeholder="Cari nomor SOP, judul panduan, atau kata kunci..."
+                                            autocomplete="off">
+                                        <button class="btn btn-outline-secondary border-start-0 text-muted d-none" type="button" id="clearSearchBtn" title="Hapus pencarian">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                    <div id="searchSuggestionsSOP" class="search-suggestions shadow-sm"></div>
                                 </div>
-                                <div id="searchResultsSOP" class="mt-4"></div>
                             </div>
+
+                            <!-- Year Filter -->
+                            <div class="col-6 col-md-3 col-lg-3">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent text-muted small"><i class="bi bi-calendar3"></i></span>
+                                    <select class="form-select form-select-sm" id="yearFilter">
+                                        <option value="">Semua Tahun</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Refresh Button -->
+                            <div class="col-6 col-md-1 col-lg-2 text-end">
+                                <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="resetFilterBtn" title="Reset Filter">
+                                    <i class="bi bi-arrow-counterclockwise"></i> <span class="d-none d-lg-inline">Reset</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOP Data Table Card -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" id="sopTable" style="font-size: 0.9rem;">
+                                <thead class="table-light border-bottom">
+                                    <tr>
+                                        <th class="ps-3 text-center" style="width: 55px;">No</th>
+                                        <th style="min-width: 170px;">Nomor SOP</th>
+                                        <th style="min-width: 280px;">Judul / Panduan Prosedur</th>
+                                        <th class="text-center" style="width: 120px;">Tahun</th>
+                                        <th class="pe-3 text-center" style="width: 170px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sopTableBody">
+                                    <!-- Dynamic rows loaded via JS -->
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">
+                                            <div class="spinner-border spinner-border-sm text-warning me-2" role="status"></div>
+                                            Memuat pangkalan data SOP...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Table Footer: Info & Pagination -->
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 px-3 py-3 border-top bg-body-tertiary">
+                            <div class="small text-muted" id="paginationInfo">
+                                Menampilkan 0 data
+                            </div>
+                            <div id="paginationContainer"></div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const searchInputSOP = document.getElementById('searchInputSOP');
-                    const searchSuggestionsSOP = document.getElementById('searchSuggestionsSOP');
-                    const searchResultsSOP = document.getElementById('searchResultsSOP');
-                    const alertContainer = document.getElementById('alertContainer');
-                    const paginationContainer = document.createElement('div');
-                    paginationContainer.id = 'paginationContainer';
-                    searchResultsSOP.parentNode.insertBefore(paginationContainer, searchResultsSOP.nextSibling);
-                    let typingTimerSOP;
-                    let currentPage = 1;
-                    let totalPages = 1;
+    <!-- Quick View PDF Modal -->
+    <div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header bg-warning text-dark py-3">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1 overflow-hidden me-2">
+                        <i class="bi bi-file-earmark-pdf fs-4 flex-shrink-0"></i>
+                        <div class="overflow-hidden">
+                            <h6 class="modal-title fw-bold text-truncate mb-0" id="quickViewModalLabel">Preview Dokumen SOP</h6>
+                            <small class="text-muted font-monospace" id="quickViewDocNumber">-</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <a href="#" target="_blank" class="btn btn-dark btn-sm fw-medium" id="quickViewTabBtn">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Tab Baru
+                        </a>
+                        <a href="#" class="btn btn-dark btn-sm fw-medium" id="quickViewDownloadBtn">
+                            <i class="bi bi-download me-1"></i> Unduh
+                        </a>
+                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-0" style="min-height: 550px; height: 75vh; background: #525659;">
+                    <iframe id="quickViewFrame" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    // Function to show alert
-                    function showAlert(message, type = 'success') {
-                        const alert = document.createElement('div');
-                        alert.className = `alert alert-${type} alert-dismissible fade show`;
-                        alert.innerHTML = `
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                        alertContainer.appendChild(alert);
+    <!-- Delete Confirmation Modal -->
+    <?php if ($can_manage): ?>
+        <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-body text-center p-4">
+                        <div class="text-danger mb-3">
+                            <i class="bi bi-exclamation-triangle fs-1"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2">Hapus Berkas SOP?</h6>
+                        <p class="text-muted small mb-4" id="deleteDocNumberText">Dokumen yang dihapus tidak dapat dipulihkan kembali.</p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="button" class="btn btn-light btn-sm px-3" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-danger btn-sm px-3" id="confirmDeleteBtn">Ya, Hapus</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 
-                        // Auto dismiss after 5 seconds
-                        setTimeout(() => {
-                            alert.remove();
-                        }, 5000);
-                    }
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInputSOP');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            const searchSpinner = document.getElementById('searchSpinner');
+            const searchIcon = document.getElementById('searchIcon');
+            const searchSuggestions = document.getElementById('searchSuggestionsSOP');
+            const yearFilter = document.getElementById('yearFilter');
+            const resetFilterBtn = document.getElementById('resetFilterBtn');
+            const tableBody = document.getElementById('sopTableBody');
+            const totalCountEl = document.getElementById('totalCount');
+            const paginationInfo = document.getElementById('paginationInfo');
+            const paginationContainer = document.getElementById('paginationContainer');
 
-                    function escapeHtml(str) {
-                        if (str === null || str === undefined) return '';
-                        return String(str)
-                            .replace(/&/g, '&amp;')
-                            .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
-                            .replace(/"/g, '&quot;')
-                            .replace(/'/g, '&#039;');
-                    }
+            // Modals
+            const quickViewModalEl = document.getElementById('quickViewModal');
+            const quickViewModal = new bootstrap.Modal(quickViewModalEl);
+            const quickViewLabel = document.getElementById('quickViewModalLabel');
+            const quickViewDocNumber = document.getElementById('quickViewDocNumber');
+            const quickViewFrame = document.getElementById('quickViewFrame');
+            const quickViewTabBtn = document.getElementById('quickViewTabBtn');
+            const quickViewDownloadBtn = document.getElementById('quickViewDownloadBtn');
 
-                    // Fungsi untuk membuat card SOP
-                    function createSopCard(sop) {
-                        const nomorSop = escapeHtml(sop.nomor_sop);
-                        const tahunDisahkan = escapeHtml(sop.tahun_disahkan);
-                        const judulSop = escapeHtml(sop.judul_sop);
-                        const sopId = encodeURIComponent(sop.id);
-                        let deleteButton = '';
-                        <?php if ($role === 'admin_dok' || $role === 'ti_admin'): ?>
-                            deleteButton = `
-                        <button class="btn btn-danger ms-2 delete-sop" data-sop-id="${sopId}" data-sop-nomor="${nomorSop}">
-                            <i class="bi bi-trash me-1"></i> Hapus
-                        </button>
-                    `;
-                        <?php endif; ?>
+            <?php if ($can_manage): ?>
+                const deleteModalEl = document.getElementById('deleteConfirmModal');
+                const deleteModal = new bootstrap.Modal(deleteModalEl);
+                const deleteDocNumberText = document.getElementById('deleteDocNumberText');
+                const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+                let pendingDeleteId = null;
+            <?php endif; ?>
 
-                        return `
-                    <div class="card border-0 shadow-sm mb-3">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-start">
-                                <div class="me-3">
-                                    <i class="bi bi-file-text text-primary" style="font-size: 2rem;"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <div>
-                                            <span class="text-primary">${nomorSop}</span> | 
-                                            <span>${tahunDisahkan}</span>
-                                        </div>
-                                    </div>
-                                    <h5 class="mb-3">${judulSop}</h5>
-                                    <div>
-                                        <a href="detail_sop.php?id=${sopId}" class="btn btn-primary">
-                                            <i class="bi bi-search me-1"></i> Selengkapnya
-                                        </a>
-                                        ${deleteButton}
-                                    </div>
-                                </div>
+            let currentPage = 1;
+            let totalPages = 1;
+            let totalDataCount = 0;
+            let typingTimer;
+            const itemsPerPage = 10;
+
+            function escapeHtml(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function showToast(type, message) {
+                let toastContainer = document.querySelector('.toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    toastContainer.style.zIndex = '1100';
+                    document.body.appendChild(toastContainer);
+                }
+
+                const bgClass = (type === 'success') ? 'bg-success text-white' : 'bg-danger text-white';
+                const iconClass = (type === 'success') ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+                const toastHtml = `
+                    <div class="toast align-items-center ${bgClass} border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body d-flex align-items-center gap-2">
+                                <i class="bi ${iconClass} fs-5"></i>
+                                <span>${escapeHtml(message)}</span>
                             </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                         </div>
                     </div>
                 `;
-                    }
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = toastHtml;
+                const toastEl = tempDiv.firstElementChild;
+                toastContainer.appendChild(toastEl);
+                const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+                toast.show();
+            }
 
-                    // Function to handle SOP deletion
-                    function deleteSOP(sopId) {
-                        fetch('delete_sop.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    id: sopId
-                                })
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    showAlert('SOP berhasil dihapus');
-                                    loadSOP(currentPage, searchInputSOP.value.trim());
-                                } else {
-                                    throw new Error(data.message || 'Gagal menghapus SOP');
-                                }
-                            })
-                            .catch(error => {
-                                showAlert(error.message, 'danger');
-                            });
-                    }
-
-                    // Handle delete button click
-                    document.addEventListener('click', function(e) {
-                        if (e.target.closest('.delete-sop')) {
-                            const button = e.target.closest('.delete-sop');
-                            const sopId = button.dataset.sopId;
-                            const sopNomor = button.dataset.sopNomor;
-
-                            if (confirm(`Apakah Anda yakin ingin menghapus SOP dengan nomor ${sopNomor}?`)) {
-                                deleteSOP(sopId);
-                            }
-                        }
+            function updateYearOptions(years) {
+                if (!years || !Array.isArray(years)) return;
+                const currentSelected = yearFilter.value;
+                const existingYears = Array.from(yearFilter.options).map(o => o.value).filter(v => v !== '');
+                if (existingYears.length === 0 && years.length > 0) {
+                    years.forEach(y => {
+                        const opt = document.createElement('option');
+                        opt.value = y;
+                        opt.textContent = 'Tahun ' + y;
+                        yearFilter.appendChild(opt);
                     });
+                    if (currentSelected) yearFilter.value = currentSelected;
+                }
+            }
 
-                    // Fungsi untuk membuat pagination
-                    function createPagination(currentPage, totalPages) {
-                        let paginationHTML = '<nav><ul class="pagination justify-content-center">';
-                        if (currentPage > 1) {
-                            paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}"> << </a></li>`;
-                        }
-                        for (let i = 1; i <= totalPages; i++) {
-                            paginationHTML += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
-                        }
-                        if (currentPage < totalPages) {
-                            paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}"> >> </a></li>`;
-                        }
-                        paginationHTML += '</ul></nav>';
-                        return paginationHTML;
-                    }
+            function renderTable(results, page, total) {
+                if (!results || results.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <i class="bi bi-file-earmark-x text-muted fs-1 d-block mb-2"></i>
+                                <span class="text-muted fw-medium">Tidak ada dokumen SOP yang sesuai dengan filter atau kata kunci.</span>
+                            </td>
+                        </tr>
+                    `;
+                    paginationInfo.textContent = 'Menampilkan 0 data';
+                    paginationContainer.innerHTML = '';
+                    return;
+                }
 
-                    // Fungsi untuk memuat data SOP
-                    function loadSOP(page, searchTerm = '') {
-                        const url = searchTerm ? `search_sop.php?term=${encodeURIComponent(searchTerm)}&page=${page}` : `get_all_sop.php?page=${page}`;
-                        fetch(url)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.results.length > 0) {
-                                    searchResultsSOP.innerHTML = data.results.map(sop => createSopCard(sop)).join('');
-                                    paginationContainer.innerHTML = createPagination(data.currentPage, data.totalPages);
-                                } else {
-                                    searchResultsSOP.innerHTML = '<div class="alert alert-info">Tidak ditemukan SOP yang sesuai dengan kata kunci.</div>';
-                                    paginationContainer.innerHTML = '';
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                searchResultsSOP.innerHTML = '<div class="alert alert-danger">Terjadi kesalahan saat memuat data.</div>';
-                                paginationContainer.innerHTML = '';
-                            });
-                    }
+                const startIdx = (page - 1) * itemsPerPage + 1;
+                const endIdx = Math.min(page * itemsPerPage, total);
+                paginationInfo.textContent = `Menampilkan ${startIdx}–${endIdx} dari ${total} prosedur`;
 
-                    // Handle input pencarian
-                    searchInputSOP.addEventListener('input', function() {
-                        clearTimeout(typingTimerSOP);
-                        typingTimerSOP = setTimeout(() => {
-                            const searchTerm = this.value.trim();
-                            if (searchTerm.length > 2) {
-                                loadSOP(1, searchTerm);
-                            } else {
-                                loadSOP(1);
-                            }
-                        }, 500);
+                tableBody.innerHTML = results.map((sop, index) => {
+                    const rowNumber = startIdx + index;
+                    const nomorSop = escapeHtml(sop.nomor_sop);
+                    const judulSop = escapeHtml(sop.judul_sop);
+                    const tahun = escapeHtml(sop.tahun_disahkan || '-');
+                    const sopId = encodeURIComponent(sop.id);
+
+                    let deleteBtnHtml = '';
+                    <?php if ($can_manage): ?>
+                        deleteBtnHtml = `
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-sop" data-sop-id="${sopId}" data-sop-nomor="${nomorSop}" title="Hapus SOP">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        `;
+                    <?php endif; ?>
+
+                    return `
+                        <tr>
+                            <td class="ps-3 text-center text-muted fw-semibold">${rowNumber}</td>
+                            <td>
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle font-monospace px-2 py-1">
+                                    ${nomorSop}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-truncate" style="max-width: 440px;" title="${judulSop}">
+                                    ${judulSop}
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
+                                    ${tahun}
+                                </span>
+                            </td>
+                            <td class="pe-3 text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-warning text-dark btn-preview-sop" data-sop-id="${sopId}" data-sop-nomor="${nomorSop}" data-sop-judul="${judulSop}" title="Preview Dokumen">
+                                        <i class="bi bi-eye me-1"></i> Lihat
+                                    </button>
+                                    <a href="view_sop.php?id=${sopId}&download=1" class="btn btn-outline-secondary" title="Unduh PDF">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                    ${deleteBtnHtml}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            function renderPagination(currPage, totalPgs) {
+                if (totalPgs <= 1) {
+                    paginationContainer.innerHTML = '';
+                    return;
+                }
+
+                let html = '<ul class="pagination pagination-sm mb-0">';
+                html += `<li class="page-item ${currPage <= 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currPage - 1}" aria-label="Previous">&laquo;</a>
+                </li>`;
+
+                const maxVisible = 5;
+                let startPage = Math.max(1, currPage - Math.floor(maxVisible / 2));
+                let endPage = Math.min(totalPgs, startPage + maxVisible - 1);
+                if (endPage - startPage + 1 < maxVisible) {
+                    startPage = Math.max(1, endPage - maxVisible + 1);
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    html += `<li class="page-item ${i === currPage ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>`;
+                }
+
+                html += `<li class="page-item ${currPage >= totalPgs ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currPage + 1}" aria-label="Next">&raquo;</a>
+                </li>`;
+                html += '</ul>';
+
+                paginationContainer.innerHTML = html;
+            }
+
+            function loadData(page = 1) {
+                const term = searchInput.value.trim();
+                const year = yearFilter.value;
+
+                searchIcon.classList.add('d-none');
+                searchSpinner.classList.remove('d-none');
+
+                const params = new URLSearchParams();
+                params.set('page', page);
+                params.set('limit', itemsPerPage);
+                if (term) params.set('term', term);
+                if (year) params.set('year', year);
+
+                const endpoint = term ? `search_sop.php?${params.toString()}` : `get_all_sop.php?${params.toString()}`;
+
+                fetch(endpoint)
+                    .then(res => res.json())
+                    .then(data => {
+                        currentPage = data.currentPage || page;
+                        totalPages = data.totalPages || 1;
+                        totalDataCount = data.total !== undefined ? data.total : (data.results ? data.results.length : 0);
+
+                        totalCountEl.textContent = Number(totalDataCount).toLocaleString('id-ID');
+                        if (data.years) {
+                            updateYearOptions(data.years);
+                        }
+
+                        renderTable(data.results || [], currentPage, totalDataCount);
+                        renderPagination(currentPage, totalPages);
+                    })
+                    .catch(err => {
+                        console.error('Error fetching SOP data:', err);
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-danger">
+                                    <i class="bi bi-exclamation-circle me-1"></i> Terjadi kesalahan saat memuat pangkalan data SOP.
+                                </td>
+                            </tr>
+                        `;
+                    })
+                    .finally(() => {
+                        searchSpinner.classList.add('d-none');
+                        searchIcon.classList.remove('d-none');
                     });
+            }
 
-                    // Handle klik pagination
-                    paginationContainer.addEventListener('click', function(e) {
-                        if (e.target.tagName === 'A') {
-                            e.preventDefault();
-                            const page = e.target.getAttribute('data-page');
-                            loadSOP(page, searchInputSOP.value.trim());
+            // Quick View Trigger
+            tableBody.addEventListener('click', function(e) {
+                const previewBtn = e.target.closest('.btn-preview-sop');
+                if (previewBtn) {
+                    const sopId = previewBtn.dataset.sopId;
+                    const sopNomor = previewBtn.dataset.sopNomor;
+                    const sopJudul = previewBtn.dataset.sopJudul;
+
+                    quickViewLabel.textContent = sopJudul;
+                    quickViewDocNumber.textContent = sopNomor;
+                    quickViewFrame.src = `view_sop.php?id=${sopId}#toolbar=1`;
+                    quickViewTabBtn.href = `view_sop.php?id=${sopId}`;
+                    quickViewDownloadBtn.href = `view_sop.php?id=${sopId}&download=1`;
+
+                    quickViewModal.show();
+                    return;
+                }
+
+                <?php if ($can_manage): ?>
+                    const deleteBtn = e.target.closest('.btn-delete-sop');
+                    if (deleteBtn) {
+                        pendingDeleteId = deleteBtn.dataset.sopId;
+                        const docNomor = deleteBtn.dataset.sopNomor;
+                        deleteDocNumberText.innerHTML = `Anda akan menghapus dokumen <strong>${escapeHtml(docNomor)}</strong>.`;
+                        deleteModal.show();
+                    }
+                <?php endif; ?>
+            });
+
+            quickViewModalEl.addEventListener('hidden.bs.modal', function() {
+                quickViewFrame.src = '';
+            });
+
+            // Confirm Delete Handler
+            <?php if ($can_manage): ?>
+                confirmDeleteBtn.addEventListener('click', function() {
+                    if (!pendingDeleteId) return;
+
+                    confirmDeleteBtn.disabled = true;
+                    confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menghapus...';
+
+                    fetch('delete_sop.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: pendingDeleteId })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            deleteModal.hide();
+                            showToast('success', 'Dokumen SOP berhasil dihapus.');
+                            loadData(currentPage);
+                        } else {
+                            throw new Error(data.message || 'Gagal menghapus dokumen');
                         }
+                    })
+                    .catch(err => {
+                        showToast('danger', err.message);
+                    })
+                    .finally(() => {
+                        confirmDeleteBtn.disabled = false;
+                        confirmDeleteBtn.innerHTML = 'Ya, Hapus';
+                        pendingDeleteId = null;
                     });
-
-                    // Load semua SOP saat pertama kali
-                    loadSOP(1);
                 });
-            </script>
+            <?php endif; ?>
+
+            // Search Input with Debounce & Toggle Clear Button
+            searchInput.addEventListener('input', function() {
+                const val = this.value.trim();
+                clearSearchBtn.classList.toggle('d-none', val.length === 0);
+
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    loadData(1);
+                }, 350);
+            });
+
+            clearSearchBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                clearSearchBtn.classList.add('d-none');
+                loadData(1);
+            });
+
+            yearFilter.addEventListener('change', function() {
+                loadData(1);
+            });
+
+            resetFilterBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                clearSearchBtn.classList.add('d-none');
+                yearFilter.value = '';
+                loadData(1);
+            });
+
+            paginationContainer.addEventListener('click', function(e) {
+                const link = e.target.closest('a.page-link');
+                if (link && !link.parentElement.classList.contains('disabled')) {
+                    e.preventDefault();
+                    const page = parseInt(link.dataset.page);
+                    if (page && page !== currentPage) {
+                        loadData(page);
+                    }
+                }
+            });
+
+            // Initial load
+            loadData(1);
+        });
+    </script>
 </body>
 
 </html>

@@ -3,30 +3,47 @@ require_once '../includes/auth.php';
 require_once '../includes/functions.php';
 check_login();
 
-header('Content-Type: application/json');
+if (!headers_sent()) {
+    header('Content-Type: application/json');
+}
 
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 5;
+$page = max(1, (int)($_GET['page'] ?? 1));
+$limit = max(1, min(50, (int)($_GET['limit'] ?? 10)));
 $offset = ($page - 1) * $limit;
+$year = !empty($_GET['year']) ? (int)$_GET['year'] : null;
+
+$whereClause = $year ? "WHERE tahun_disahkan = :year" : "";
 
 // Query untuk mengambil data SOP dengan pagination
-$query = "SELECT * FROM sop_table ORDER BY tahun_disahkan DESC, nomor_sop DESC LIMIT :limit OFFSET :offset";
+$query = "SELECT * FROM sop_table $whereClause ORDER BY tahun_disahkan DESC, nomor_sop DESC LIMIT :limit OFFSET :offset";
 $stmt = $pdo->prepare($query);
-$stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-$stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+if ($year) {
+    $stmt->bindValue(':year', $year, PDO::PARAM_INT);
+}
+$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Query untuk menghitung total data
-$countQuery = "SELECT COUNT(*) as total FROM sop_table";
+$countQuery = "SELECT COUNT(*) as total FROM sop_table $whereClause";
 $countStmt = $pdo->prepare($countQuery);
+if ($year) {
+    $countStmt->bindValue(':year', $year, PDO::PARAM_INT);
+}
 $countStmt->execute();
-$totalData = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+$totalData = (int)$countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-$totalPages = ceil($totalData / $limit);
+// Available Years
+$yearsStmt = $pdo->query("SELECT DISTINCT tahun_disahkan FROM sop_table WHERE tahun_disahkan IS NOT NULL AND tahun_disahkan > 0 ORDER BY tahun_disahkan DESC");
+$years = $yearsStmt->fetchAll(PDO::FETCH_COLUMN);
+
+$totalPages = (int)ceil($totalData / $limit);
 
 echo json_encode([
     'results' => $results,
     'totalPages' => $totalPages,
-    'currentPage' => $page
+    'currentPage' => $page,
+    'total' => $totalData,
+    'years' => $years
 ]);
