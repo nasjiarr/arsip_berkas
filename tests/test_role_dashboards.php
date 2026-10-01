@@ -34,7 +34,7 @@ function simulate_dashboard_render(string $role, string $username = 'TestUser'):
 // 1. Test Role: admin_dok
 $html_dok = simulate_dashboard_render('admin_dok', 'dokumen_staff');
 assert(strpos($html_dok, 'id="tab-kredit-tab"') === false, 'admin_dok must NOT have tab-kredit-tab');
-assert(strpos($html_dok, 'defaultTabId = \'tab-regulasi-tab\'') !== false, 'admin_dok default tab must be tab-regulasi-tab');
+assert(strpos($html_dok, 'id="tab-regulasi-tab"') !== false, 'admin_dok must have tab-regulasi-tab');
 assert(strpos($html_dok, 'Upload Berkas SK') !== false, 'admin_dok must have Upload Berkas SK');
 assert(strpos($html_dok, 'Upload Berkas SOP') !== false, 'admin_dok must have Upload Berkas SOP');
 assert(strpos($html_dok, 'Upload Berkas Kredit') === false, 'admin_dok must NOT have Upload Berkas Kredit');
@@ -46,6 +46,10 @@ echo "PASS: Role admin_dok adaptive dashboard verified.\n";
 // 2. Test Role: teller
 $html_teller = simulate_dashboard_render('teller', 'teller_utama');
 assert(strpos($html_teller, 'id="tab-kredit-tab"') !== false, 'teller must have tab-kredit-tab');
+assert(strpos($html_teller, 'id="tab-regulasi-tab"') === false, 'teller must NOT have tab-regulasi-tab');
+assert(strpos($html_teller, 'Regulasi (SK & SOP)') === false, 'teller must NOT have Regulasi tab');
+assert(strpos($html_teller, 'Arsip SK') === false, 'teller must NOT have Arsip SK in Quick Access');
+assert(strpos($html_teller, 'Arsip SOP') === false, 'teller must NOT have Arsip SOP in Quick Access');
 assert(strpos($html_teller, 'Spesimen Tanda Tangan') !== false, 'teller Tab 1 must be titled Spesimen Tanda Tangan');
 assert(strpos($html_teller, 'Upload Spesimen Tanda Tangan') !== false, 'teller must have Upload Spesimen');
 assert(strpos($html_teller, 'Cek Spesimen Tanda Tangan') !== false, 'teller must have Cek Spesimen');
@@ -59,6 +63,7 @@ echo "PASS: Role teller adaptive dashboard verified.\n";
 // 3. Test Role: adminkredit
 $html_kredit = simulate_dashboard_render('adminkredit', 'kredit_admin');
 assert(strpos($html_kredit, 'id="tab-kredit-tab"') !== false, 'adminkredit must have tab-kredit-tab');
+assert(strpos($html_kredit, 'id="tab-regulasi-tab"') !== false, 'adminkredit must have tab-regulasi-tab');
 assert(strpos($html_kredit, 'Upload Berkas Kredit') !== false, 'adminkredit must have Upload Kredit');
 assert(strpos($html_kredit, 'Cek Berkas Kredit') !== false, 'adminkredit must have Cek Kredit');
 assert(strpos($html_kredit, 'Upload Spesimen Tanda Tangan') === false, 'adminkredit must NOT have Upload Spesimen');
@@ -70,9 +75,12 @@ echo "PASS: Role adminkredit adaptive dashboard verified.\n";
 // 4. Test Role: marketing
 $html_mkt = simulate_dashboard_render('marketing', 'marketing_officer');
 assert(strpos($html_mkt, 'id="tab-kredit-tab"') !== false, 'marketing must have tab-kredit-tab');
+assert(strpos($html_mkt, 'id="tab-regulasi-tab"') === false, 'marketing must NOT have tab-regulasi-tab');
+assert(strpos($html_mkt, 'Regulasi (SK & SOP)') === false, 'marketing must NOT have Regulasi tab');
+assert(strpos($html_mkt, 'Arsip SK') === false, 'marketing must NOT have Arsip SK in Quick Access');
+assert(strpos($html_mkt, 'Arsip SOP') === false, 'marketing must NOT have Arsip SOP in Quick Access');
 assert(strpos($html_mkt, 'Pencarian Berkas Kredit') !== false, 'marketing must have centered Pencarian Berkas Kredit');
 assert(strpos($html_mkt, 'Upload Berkas Kredit') === false, 'marketing must NOT have Upload Kredit');
-assert(strpos($html_mkt, 'Pusat Regulasi & Kebijakan Operasional') !== false, 'marketing must see welcoming regulation catalog banner');
 assert(strpos($html_mkt, 'Akses upload dan kelola berkas regulasi dibatasi') === false, 'marketing must NOT see restrictive error message');
 assert(strpos($html_mkt, 'stat-card') === false, 'marketing must NOT have stat-card (only ti_admin)');
 assert(strpos($html_mkt, 'Aktivitas Disposisi Surat Terkini') === false, 'marketing must NOT have Aktivitas Disposisi');

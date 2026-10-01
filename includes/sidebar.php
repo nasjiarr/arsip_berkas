@@ -37,7 +37,7 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
                     <small class="brand-subtitle" style="font-size: 0.72rem;">Bank Kulon Progo</small>
                 </div>
             </div>
-            <button type="button" class="btn-close d-md-none sidebar-close-btn" id="sidebarCloseBtn" aria-label="Tutup"></button>
+            <button type="button" class="btn-close sidebar-close-btn" id="sidebarCloseBtn" aria-label="Tutup Navigasi" title="Tutup Navigasi"></button>
         </div>
 
         <div class="px-2 py-1 mb-3 user-badge rounded small d-flex align-items-center justify-content-between">
@@ -72,10 +72,14 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
                     <i class="bi bi-folder2-open me-2"></i> Cek Berkas
                 </a>
                 <ul class="dropdown-menu shadow border-0" aria-labelledby="dropdownMenuLink">
-                    <li><a class="dropdown-item py-2 <?= $is_active_sk ? 'active' : '' ?>" href="<?= $base_url ?>cek_sk.php"><i class="bi bi-file-earmark-text me-2"></i>Cek SK</a></li>
-                    <li><a class="dropdown-item py-2 <?= $is_active_sop ? 'active' : '' ?>" href="<?= $base_url ?>cek_sop.php"><i class="bi bi-file-earmark-ruled me-2"></i>Cek SOP</a></li>
+                    <?php if ($user_role !== 'marketing' && $user_role !== 'teller'): ?>
+                        <li><a class="dropdown-item py-2 <?= $is_active_sk ? 'active' : '' ?>" href="<?= $base_url ?>cek_sk.php"><i class="bi bi-file-earmark-text me-2"></i>Cek SK</a></li>
+                        <li><a class="dropdown-item py-2 <?= $is_active_sop ? 'active' : '' ?>" href="<?= $base_url ?>cek_sop.php"><i class="bi bi-file-earmark-ruled me-2"></i>Cek SOP</a></li>
+                        <?php if ($user_role !== 'sekre'): ?>
+                            <li><hr class="dropdown-divider"></li>
+                        <?php endif; ?>
+                    <?php endif; ?>
                     <?php if ($user_role !== 'sekre'): ?>
-                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item py-2 <?= $is_active_disp_masuk ? 'active' : '' ?>" href="<?= $disp_url ?>disposisi.php"><i class="bi bi-envelope-arrow-down me-2"></i>Disposisi Masuk</a></li>
                         <li><a class="dropdown-item py-2 <?= $is_active_disp_keluar ? 'active' : '' ?>" href="<?= $disp_url ?>disposisi_keluar.php"><i class="bi bi-envelope-arrow-up me-2"></i>Disposisi Keluar</a></li>
                     <?php endif; ?>
@@ -167,27 +171,82 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
 
     if (sidebar && sidebarToggle && sidebarBackdrop) {
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+
         function openSidebar() {
-            sidebar.classList.add('show');
-            sidebarBackdrop.classList.add('show');
-            document.body.style.overflow = 'hidden';
+            if (isMobile()) {
+                sidebar.classList.add('show');
+                sidebarBackdrop.classList.add('show');
+                sidebarToggle.classList.add('d-none');
+                document.body.classList.add('sidebar-open');
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.classList.remove('sidebar-collapsed');
+                localStorage.setItem('sidebar_collapsed', '0');
+            }
         }
 
         function closeSidebar() {
-            sidebar.classList.remove('show');
-            sidebarBackdrop.classList.remove('show');
-            document.body.style.overflow = '';
+            if (isMobile()) {
+                sidebar.classList.remove('show');
+                sidebarBackdrop.classList.remove('show');
+                sidebarToggle.classList.remove('d-none');
+                document.body.classList.remove('sidebar-open');
+                document.body.style.overflow = '';
+            } else {
+                document.body.classList.add('sidebar-collapsed');
+                localStorage.setItem('sidebar_collapsed', '1');
+            }
         }
 
-        sidebarToggle.addEventListener('click', openSidebar);
+        function toggleSidebar() {
+            if (isMobile()) {
+                if (sidebar.classList.contains('show')) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            } else {
+                if (document.body.classList.contains('sidebar-collapsed')) {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
+            }
+        }
+
+        // Restore desktop collapsed preference
+        if (!isMobile() && localStorage.getItem('sidebar_collapsed') === '1') {
+            document.body.classList.add('sidebar-collapsed');
+        }
+
+        sidebarToggle.addEventListener('click', toggleSidebar);
         sidebarBackdrop.addEventListener('click', closeSidebar);
         if (sidebarCloseBtn) {
             sidebarCloseBtn.addEventListener('click', closeSidebar);
         }
 
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
+        // Close drawer on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && sidebar.classList.contains('show')) {
                 closeSidebar();
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            if (!isMobile()) {
+                sidebar.classList.remove('show');
+                sidebarBackdrop.classList.remove('show');
+                sidebarToggle.classList.remove('d-none');
+                document.body.classList.remove('sidebar-open');
+                document.body.style.overflow = '';
+                if (localStorage.getItem('sidebar_collapsed') === '1') {
+                    document.body.classList.add('sidebar-collapsed');
+                }
+            } else {
+                document.body.classList.remove('sidebar-collapsed');
             }
         });
     }

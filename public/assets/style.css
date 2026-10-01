@@ -174,14 +174,23 @@ body {
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
+        z-index: 1050;
     }
 
     .sidebar.show {
         transform: translateX(0);
     }
 
+    /* Hide toggle button when sidebar drawer is open */
+    body.sidebar-open .navbar-toggle {
+        display: none !important;
+    }
+
     .content {
         margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
         padding: 1rem !important;
         padding-top: 3.85rem !important; /* safe clearance so floating toggle doesn't obscure content */
     }
@@ -195,7 +204,7 @@ body {
         height: 100vh;
         background: rgba(15, 23, 42, 0.7);
         backdrop-filter: blur(2px);
-        z-index: 999;
+        z-index: 1040;
     }
 
     .sidebar-backdrop.show {
@@ -207,6 +216,59 @@ body {
         align-items: center;
         justify-content: center;
     }
+
+    /* Mobile Horizontal Scrollable Tabs */
+    .nav-tabs-custom {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+        gap: 0.25rem;
+    }
+
+    .nav-tabs-custom::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-tabs-custom .nav-link {
+        white-space: nowrap !important;
+        font-size: 0.825rem !important;
+        padding: 0.5rem 0.85rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Mobile Dropzone & Quick Access Cards */
+    .upload-drop-zone {
+        padding: 1.25rem 0.75rem !important;
+    }
+
+    .upload-drop-zone i {
+        font-size: 1.75rem !important;
+    }
+
+    .upload-drop-zone p {
+        font-size: 0.825rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .quick-access-card {
+        padding: 0.85rem 0.65rem !important;
+        border-radius: 10px !important;
+    }
+
+    .quick-access-card .mb-2 i {
+        font-size: 1.6rem !important;
+    }
+
+    .quick-access-card .fw-semibold {
+        font-size: 0.825rem !important;
+    }
+
+    .quick-access-card small {
+        font-size: 0.7rem !important;
+    }
 }
 
 /* ==========================================================================
@@ -215,8 +277,30 @@ body {
 .content {
     padding: 1.75rem 2rem;
     margin-left: 250px;
+    width: calc(100% - 250px);
+    max-width: calc(100% - 250px);
+    flex: 0 0 calc(100% - 250px);
     min-height: 100vh;
-    transition: margin 0.3s ease-in-out;
+    transition: margin 0.3s ease-in-out, padding 0.3s ease-in-out, width 0.3s ease-in-out, max-width 0.3s ease-in-out, flex 0.3s ease-in-out;
+}
+
+/* Desktop Collapsed Sidebar & Fullscreen View */
+body.sidebar-collapsed .sidebar {
+    transform: translateX(-100%);
+}
+
+body.sidebar-collapsed .content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    padding-top: 3.85rem !important; /* safe clearance so floating toggle doesn't obscure content */
+}
+
+body.sidebar-collapsed .navbar-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
 }
 
 .navbar-toggle {
@@ -242,11 +326,13 @@ body {
 .sidebar-close-btn {
     font-size: 0.8rem;
     padding: 0.5rem;
-    transition: transform 0.2s ease;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .sidebar-close-btn:hover {
     transform: rotate(90deg);
+    opacity: 0.85;
 }
 
 /* Cards */

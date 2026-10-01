@@ -51,11 +51,18 @@ assert(strpos($css_content, '.sidebar-close-btn') !== false, 'style.css must def
 assert(strpos($css_content, 'padding-top: 3.85rem') !== false, 'style.css must provide mobile clearance for navbar-toggle');
 echo "PASS: Typography, corporate palette variables and table styling present in style.css.\n";
 
-// 5. Test sidebar drawer components
+// 5. Test sidebar drawer and close button components
 $sidebar_content = file_get_contents($sidebar_path);
 assert(strpos($sidebar_content, 'id="sidebarCloseBtn"') !== false, 'sidebar.php must contain sidebarCloseBtn');
 assert(strpos($sidebar_content, 'id="sidebarToggle"') !== false, 'sidebar.php must contain sidebarToggle');
 assert(strpos($sidebar_content, 'id="sidebarBackdrop"') !== false, 'sidebar.php must contain sidebarBackdrop');
-echo "PASS: Sidebar mobile drawer and close button components verified.\n";
+assert(strpos($sidebar_content, 'd-md-none sidebar-close-btn') === false, 'sidebarCloseBtn must not be hidden on desktop');
+assert(strpos($css_content, 'body.sidebar-collapsed .sidebar') !== false, 'style.css must support collapsible sidebar on desktop');
+assert(strpos($css_content, 'body.sidebar-collapsed .content') !== false, 'style.css must support fullscreen content on desktop collapse');
+assert(strpos($css_content, 'width: 100% !important') !== false, 'style.css must expand content width to 100% when collapsed');
+assert(strpos($css_content, 'body.sidebar-collapsed .navbar-toggle') !== false, 'style.css must display toggle when sidebar collapsed on desktop');
+assert(strpos($css_content, 'body.sidebar-open .navbar-toggle') !== false, 'style.css must hide toggle when mobile drawer is open');
+assert(strpos($sidebar_content, "sidebarToggle.classList.add('d-none')") !== false, 'sidebar.php must hide toggle when opening mobile drawer');
+echo "PASS: Sidebar responsive drawer, close button, and desktop collapse verified.\n";
 
 echo "ALL UI CONSISTENCY TESTS PASSED (100%)\n";
