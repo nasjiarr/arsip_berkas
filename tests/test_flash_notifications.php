@@ -44,4 +44,11 @@ $sidebar_content = file_get_contents($base_dir . '/includes/sidebar.php');
 assert(strpos($sidebar_content, 'render_flash_toast') !== false, 'sidebar.php must invoke render_flash_toast');
 echo "PASS: sidebar.php invokes render_flash_toast automatically for all pages.\n";
 
+// 5. Test functions.php integrates set_flash_message and dashboard.php removed invasive alertModal
+$functions_content = file_get_contents($base_dir . '/includes/functions.php');
+assert(strpos($functions_content, 'set_flash_message') !== false, 'functions.php must use set_flash_message for mutations');
+$dashboard_content = file_get_contents($base_dir . '/public/dashboard.php');
+assert(strpos($dashboard_content, 'id="alertModal"') === false, 'dashboard.php must not contain invasive alertModal');
+echo "PASS: functions.php flash message alignment and elimination of alertModal verified.\n";
+
 echo "ALL FLASH NOTIFICATION TESTS PASSED (100%)\n";

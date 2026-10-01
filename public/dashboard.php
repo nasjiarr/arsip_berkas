@@ -23,6 +23,45 @@ try {
 } catch (Exception $e) {
     // Graceful fallback to default 0
 }
+
+// ponytail: query latest 6 dispositions for activity log in tab 3; upgrade with paginated logs if needed.
+$recent_activities = [];
+try {
+    $stmt = $pdo->query("
+        (SELECT 'masuk' as tipe, id, kode, nomer_surat as nomor, dari as pihak, perihal, tanggal_masuk as tanggal FROM disposisi_surat)
+        UNION ALL
+        (SELECT 'keluar' as tipe, id, kode, nomor_surat as nomor, ke as pihak, perihal, tanggal FROM disposisi_keluar)
+        ORDER BY tanggal DESC, id DESC LIMIT 6
+    ");
+    $recent_activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    // Graceful fallback
+}
+
+// ponytail: dynamic role capability flags for adaptive dashboard UI
+$can_upload_kredit = ($role === 'ti_admin' || $role === 'adminkredit');
+$can_cek_kredit    = ($role !== 'teller' && $role !== 'admin_dok');
+$has_kredit        = ($can_upload_kredit || $can_cek_kredit);
+
+$can_ttd           = ($role === 'teller' || $role === 'ti_admin');
+$has_tab_kredit    = ($has_kredit || $can_ttd);
+
+// Dynamic Tab 1 Label & Icon based on role
+if ($role === 'teller') {
+    $tab1_title = 'Spesimen Tanda Tangan';
+    $tab1_icon  = 'bi-pen';
+} elseif ($role === 'adminkredit') {
+    $tab1_title = 'Berkas Kredit';
+    $tab1_icon  = 'bi-folder-check';
+} elseif (!$can_upload_kredit && $can_cek_kredit) {
+    $tab1_title = 'Cek Berkas Kredit';
+    $tab1_icon  = 'bi-search';
+} else {
+    $tab1_title = 'Berkas Kredit & Spesimen TTD';
+    $tab1_icon  = 'bi-folder-check';
+}
+
+$default_tab_id = ($has_tab_kredit ? 'tab-kredit-tab' : 'tab-regulasi-tab');
 ?>
 
 <!DOCTYPE html>
@@ -151,393 +190,558 @@ try {
                     </div>
                 </div>
 
-                <div class="row">
-                    <!-- Cek Rekening Card -->
-                    <?php if ($role === 'ti_admin' || $role === 'adminkredit'): ?>
-                        <!-- Upload Card Berkas Kredit-->
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="card-title mb-0"><i class="bi bi-upload"></i> Upload Berkas Kredit</h5>
-                                </div>
-                                <div class="card-body">
-                                    <h6>Silahkan upload berkas kredit dalam format PDF</h6>
-                                    <form action="" method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadFormBerkas">
-                                        <div class="mb-3">
-                                            <div class="upload-drop-zone" id="dropZoneBerkas">
-                                                <i class="bi bi-cloud-upload fs-2"></i>
-                                                <p class="mb-2">Drag & drop file PDF di sini atau klik untuk memilih</p>
-                                                <input type="file" name="files[]" class="form-control" accept=".pdf" multiple required id="fileInputBerkas" style="display: none;">
-                                                <button type="button" class="btn btn-outline-primary" id="browseButtonBerkas">Pilih File</button>
-                                            </div>
-                                            <div class="selected-files-list" id="filesListBerkas"></div>
-                                        </div>
-                                        <button type="submit" name="upload" class="btn btn-primary" id="uploadButtonBerkas" disabled>Unggah</button>
-
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-
+                <!-- Navigation Tabs (Tengah: Tabbed Utility) -->
+                <ul class="nav nav-tabs nav-tabs-custom mb-4" id="dashboardTab" role="tablist">
+                    <?php if ($has_tab_kredit): ?>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link <?= ($default_tab_id === 'tab-kredit-tab' ? 'active' : '') ?>" id="tab-kredit-tab" data-bs-toggle="tab" data-bs-target="#tab-kredit" type="button" role="tab" aria-controls="tab-kredit" aria-selected="<?= ($default_tab_id === 'tab-kredit-tab' ? 'true' : 'false') ?>">
+                                <i class="bi <?= $tab1_icon ?>"></i> <?= htmlspecialchars($tab1_title) ?>
+                            </button>
+                        </li>
                     <?php endif; ?>
-                    <?php if ($role !== 'teller' && $role !== 'admin_dok'): ?>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link <?= ($default_tab_id === 'tab-regulasi-tab' ? 'active' : '') ?>" id="tab-regulasi-tab" data-bs-toggle="tab" data-bs-target="#tab-regulasi" type="button" role="tab" aria-controls="tab-regulasi" aria-selected="<?= ($default_tab_id === 'tab-regulasi-tab' ? 'true' : 'false') ?>">
+                            <i class="bi bi-file-earmark-ruled"></i> Regulasi (SK & SOP)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-log-tab" data-bs-toggle="tab" data-bs-target="#tab-log" type="button" role="tab" aria-controls="tab-log" aria-selected="false">
+                            <i class="bi bi-speedometer2"></i> Log Sistem / Quick Access
+                        </button>
+                    </li>
+                </ul>
 
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="card-title mb-0"><i class="bi bi-search"></i> Cek Berkas Kredit</h5>
-                                </div>
-                                <div class="card-body">
-                                    <form method="POST" class="needs-validation" action="#previewCardPDF" novalidate>
-                                        <div class="mb-3">
-                                            <label class="form-label">Nomor Berkas:</label>
-                                            <input type="text" name="norek" class="form-control" required>
-                                            <div class="invalid-feedback">
-                                                Nomor rekening harus diisi
+                <div class="tab-content" id="dashboardTabContent">
+                    <!-- Tab 1: Berkas Kredit / Spesimen TTD (Sesuai Hak Akses Role) -->
+                    <?php if ($has_tab_kredit): ?>
+                        <div class="tab-pane fade <?= ($default_tab_id === 'tab-kredit-tab' ? 'show active' : '') ?>" id="tab-kredit" role="tabpanel" aria-labelledby="tab-kredit-tab">
+                            <?php if ($has_kredit): ?>
+                                <?php if ($can_upload_kredit && $can_cek_kredit): ?>
+                                    <!-- Two-column: Upload & Cek Berkas Kredit -->
+                                    <div class="row g-3">
+                                        <div class="col-lg-6">
+                                            <div class="card shadow-sm h-100 mb-0">
+                                                <div class="card-header bg-primary text-white">
+                                                    <h5 class="card-title mb-0"><i class="bi bi-upload me-2"></i>Upload Berkas Kredit</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p class="text-muted small mb-3">Silahkan upload berkas kredit dalam format PDF.</p>
+                                                    <form action="" method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadFormBerkas">
+                                                        <div class="mb-3">
+                                                            <div class="upload-drop-zone" id="dropZoneBerkas">
+                                                                <i class="bi bi-cloud-upload fs-2"></i>
+                                                                <p class="mb-2">Drag & drop file PDF di sini atau klik untuk memilih</p>
+                                                                <input type="file" name="files[]" class="form-control" accept=".pdf" multiple required id="fileInputBerkas" style="display: none;">
+                                                                <button type="button" class="btn btn-outline-primary" id="browseButtonBerkas">Pilih File</button>
+                                                            </div>
+                                                            <div class="selected-files-list" id="filesListBerkas"></div>
+                                                        </div>
+                                                        <button type="submit" name="upload" class="btn btn-primary" id="uploadButtonBerkas" disabled>Unggah</button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
-                                        <button type="submit" name="cek" class="btn btn-primary">
-                                            Cek
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endif; ?>
 
-
-                </div>
-
-                <!-- Cek & Upload Spesimen TTD -->
-                <?php if ($role === 'teller' || $role === 'ti_admin'): ?>
-                    <div class="row">
-
-                        <!-- Upload Card Spesimen Tanda Tangan -->
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header bg-success text-white">
-                                    <h5 class="card-title mb-0"><i class="bi bi-upload"></i> Upload Berkas Spesimen Tanda Tangan</h5>
-                                </div>
-                                <div class="card-body">
-                                    <form action="" method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadFormSpesimen">
-                                        <div class="mb-3">
-                                            <div class="upload-drop-zone" id="dropZoneSpesimen">
-                                                <i class="bi bi-cloud-upload fs-2"></i>
-                                                <p class="mb-2">Drag & drop file JPG di sini atau klik untuk memilih</p>
-                                                <input type="file" name="files[]" class="form-control" accept=".jpg,.jpeg,.png" multiple required id="fileInputSpesimen" style="display: none;">
-                                                <button type="button" class="btn btn-outline-primary" id="browseButtonSpesimen">Pilih File</button>
-                                            </div>
-                                            <div class="selected-files-list" id="filesListSpesimen"></div>
-                                        </div>
-                                        <button type="submit" name="upload_ttd" class="btn btn-success" id="uploadButtonSpesimen" disabled>Unggah</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Cek Spesimen -->
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header bg-success text-white">
-                                    <h5 class="card-title mb-0"><i class="bi bi-search"></i> Cek Spesimen Tanda Tangan</h5>
-                                </div>
-                                <div class="card-body">
-                                    <form method="POST" class="needs-validation" action="#previewCardTTD" novalidate>
-                                        <div class="mb-3">
-                                            <label class="form-label">Nomor Rekening:</label>
-                                            <input type="text" name="norek" class="form-control" required>
-                                            <div class="invalid-feedback">
-                                                Nomor rekening harus diisi
+                                        <div class="col-lg-6">
+                                            <div class="card shadow-sm h-100 mb-0">
+                                                <div class="card-header bg-primary text-white">
+                                                    <h5 class="card-title mb-0"><i class="bi bi-search me-2"></i>Cek Berkas Kredit</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p class="text-muted small mb-3">Pencarian berkas kredit berdasarkan nomor rekening / berkas pinjaman.</p>
+                                                    <form method="POST" class="needs-validation" action="#previewCardPDF" novalidate>
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-medium">Nomor Berkas:</label>
+                                                            <input type="text" name="norek" class="form-control" placeholder="Contoh: KRD-00123" required>
+                                                            <div class="invalid-feedback">
+                                                                Nomor rekening harus diisi
+                                                            </div>
+                                                        </div>
+                                                        <button type="submit" name="cek" class="btn btn-primary">
+                                                            <i class="bi bi-search me-1"></i> Cek Berkas
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
-                                        <button type="submit" name="cek_ttd" class="btn btn-success">
-                                            Cek
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-
-
-                    </div>
-
-                    <!-- Spesimen Tanda Tangan Preview Section -->
-                    <?php if (isset($jpg_url_ttd)): ?>
-                        <div class="card mt-4" id="previewCardTTD">
-                            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><i class="bi bi-file-earmark-image"></i> Preview Spesimen Tanda Tangan</h5>
-                                <a href="<?= htmlspecialchars($jpg_url_ttd) ?>" target="_blank" class="btn btn-light text-dark btn-sm me-2">
-                                    <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
-                                </a>
-                            </div>
-                            <div class="card-body text-center">
-                                <img src="<?= htmlspecialchars($jpg_url_ttd) ?>" alt="Preview Spesimen Tanda Tangan" class="img-fluid rounded" style="max-height: 600px;">
-
-                            </div>
-                        </div>
-                    <?php endif; ?>
-
-
-                <?php endif; ?>
-
-
-                <!-- PDF Preview Section -->
-                <?php if (isset($pdf_url)): ?>
-                    <div class="card mt-4" id="previewCardPDF">
-                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0"><i class="bi bi-file-earmark-pdf"></i> Preview Berkas Kredit</h5>
-                            <div class="btn-group">
-                                <a href="<?= htmlspecialchars($pdf_url) ?>" target="_blank" class="btn btn-light btn-sm me-2">
-                                    <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
-                                </a>
-                                <?php if ($role === 'adminkredit' || $role === 'ti_admin'): ?>
-                                    <a href="<?= htmlspecialchars($pdf_url) ?>&download=1" class="btn btn-light btn-sm">
-                                        <i class="bi bi-download"></i> Unduh PDF
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <object
-                                data="<?= htmlspecialchars($pdf_url) ?>"
-                                type="application/pdf"
-                                width="100%"
-                                height="600px">
-                                <p class="text-center">
-                                    Browser Anda tidak mendukung preview PDF.
-                                    <br>
-                                    <a href="<?= htmlspecialchars($pdf_url) ?>" target="_blank" class="btn btn-primary btn-sm mt-2">
-                                        <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
-                                    </a>
-                                    <?php if ($role === 'adminkredit' || $role === 'ti_admin'): ?>
-                                        <a href="<?= htmlspecialchars($pdf_url) ?>&download=1" class="btn btn-primary btn-sm mt-2 ms-2">
-                                            <i class="bi bi-download"></i> Unduh PDF
-                                        </a>
-                                    <?php endif; ?>
-                                </p>
-                            </object>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <?php if ($role === 'admin_dok' || $role === 'ti_admin'): ?>
-                    <div class="row">
-
-                        <!-- Upload Card SK -->
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header bg-primary text-white">
-                                    <h4 class="card-title mb-0"><i class="bi bi-upload"></i> Upload Berkas SK</h4>
-                                </div>
-                                <div class="card-body">
-                                    <form action="" method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadFormSK">
-                                        <div class="mb-3">
-                                            <label for="nomor_sk" class="form-label">Nomor SK</label>
-                                            <input type="text" class="form-control" id="nomor_sk" name="nomor_sk" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="judul_sk" class="form-label">Judul SK</label>
-                                            <input type="text" class="form-control" id="judul_sk" name="judul_sk" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="tahun_disahkan_sk" class="form-label">Tahun Disahkan</label>
-                                            <input type="number" class="form-control" id="tahun_disahkan_sk" name="tahun_disahkan_sk" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="upload-drop-zone" id="dropZoneSK">
-                                                <i class="bi bi-cloud-upload fs-2"></i>
-                                                <p class="mb-2">Drag & drop file SK PDF di sini atau klik untuk memilih</p>
-                                                <input type="file" name="files[]" class="form-control" accept=".pdf" multiple required id="fileInputSK" style="display: none;">
-                                                <button type="button" class="btn btn-outline-primary" id="browseButtonSK">Pilih File</button>
-                                            </div>
-                                            <div class="selected-files-list" id="filesListSK"></div>
-                                        </div>
-                                        <button type="submit" name="upload_sk" class="btn btn-success" id="uploadButtonSK" disabled>Unggah</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Upload Card SOP -->
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header bg-primary text-white">
-                                    <h4 class="card-title mb-0"><i class="bi bi-upload"></i> Upload Berkas SOP</h4>
-                                </div>
-                                <div class="card-body">
-                                    <form action="" method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadFormSOP">
-                                        <div class="mb-3">
-                                            <label for="nomor_sop" class="form-label">Nomor SOP</label>
-                                            <input type="text" class="form-control" id="nomor_sop" name="nomor_sop" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="judul_sop" class="form-label">Judul SOP</label>
-                                            <input type="text" class="form-control" id="judul_sop" name="judul_sop" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="tahun_disahkan_sop" class="form-label">Tahun Disahkan</label>
-                                            <input type="number" class="form-control" id="tahun_disahkan_sop" name="tahun_disahkan_sop" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="upload-drop-zone" id="dropZoneSOP">
-                                                <i class="bi bi-cloud-upload fs-2"></i>
-                                                <p class="mb-2">Drag & drop file SOP PDF di sini atau klik untuk memilih</p>
-                                                <input type="file" name="files[]" class="form-control" accept=".pdf" multiple required id="fileInputSOP" style="display: none;">
-                                                <button type="button" class="btn btn-outline-primary" id="browseButtonSOP">Pilih File</button>
-                                            </div>
-                                            <div class="selected-files-list" id="filesListSOP"></div>
-                                        </div>
-                                        <button type="submit" name="upload_sop" class="btn btn-success" id="uploadButtonSOP" disabled>Unggah</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                <?php endif; ?>
-
-                <!-- Alert Modal -->
-                <div class="modal fade" id="alertModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content border-0 shadow">
-                            <div class="modal-header border-0 py-3">
-                                <h5 class="modal-title fw-bold"></h5>
-                                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body px-4 py-4">
-                                <div class="text-center mb-4">
-                                    <div class="alert-icon mb-3">
-                                        <i class="bi" style="font-size: 3rem;"></i>
                                     </div>
-                                    <div class="alert-message fs-5"></div>
+                                <?php elseif ($can_cek_kredit): ?>
+                                    <!-- Centered layout for Marketing & Other Search-only Roles -->
+                                    <div class="row justify-content-center mb-3">
+                                        <div class="col-lg-8 col-xl-7">
+                                            <div class="card shadow-sm">
+                                                <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+                                                    <h5 class="card-title mb-0"><i class="bi bi-search me-2"></i>Pencarian Berkas Kredit</h5>
+                                                    <span class="badge bg-white text-primary">Marketing & Petugas</span>
+                                                </div>
+                                                <div class="card-body p-4">
+                                                    <p class="text-muted small mb-3">Masukkan nomor berkas / rekening pinjaman debitur untuk memverifikasi dan melihat dokumen kredit.</p>
+                                                    <form method="POST" class="needs-validation" action="#previewCardPDF" novalidate>
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold">Nomor Berkas / Rekening:</label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text bg-body-tertiary"><i class="bi bi-file-earmark-person"></i></span>
+                                                                <input type="text" name="norek" class="form-control" placeholder="Masukkan nomor rekening debitur..." required autofocus>
+                                                            </div>
+                                                            <div class="invalid-feedback">
+                                                                Nomor rekening harus diisi
+                                                            </div>
+                                                        </div>
+                                                        <button type="submit" name="cek" class="btn btn-primary px-4">
+                                                            <i class="bi bi-search me-1"></i> Cek Berkas
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (isset($pdf_url)): ?>
+                                    <div class="card shadow-sm mt-4 mb-4" id="previewCardPDF">
+                                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0"><i class="bi bi-file-earmark-pdf me-2"></i>Preview Berkas Kredit</h5>
+                                            <div class="btn-group">
+                                                <a href="<?= htmlspecialchars($pdf_url) ?>" target="_blank" class="btn btn-light btn-sm me-2">
+                                                    <i class="bi bi-box-arrow-up-right me-1"></i> Buka di Tab Baru
+                                                </a>
+                                                <?php if ($role === 'adminkredit' || $role === 'ti_admin'): ?>
+                                                    <a href="<?= htmlspecialchars($pdf_url) ?>&download=1" class="btn btn-light btn-sm">
+                                                        <i class="bi bi-download me-1"></i> Unduh PDF
+                                                    </a>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <object
+                                                data="<?= htmlspecialchars($pdf_url) ?>"
+                                                type="application/pdf"
+                                                width="100%"
+                                                height="600px">
+                                                <p class="text-center py-4">
+                                                    Browser Anda tidak mendukung preview PDF langsung.
+                                                    <br>
+                                                    <a href="<?= htmlspecialchars($pdf_url) ?>" target="_blank" class="btn btn-primary btn-sm mt-3">
+                                                        <i class="bi bi-box-arrow-up-right me-1"></i> Buka di Tab Baru
+                                                    </a>
+                                                    <?php if ($role === 'adminkredit' || $role === 'ti_admin'): ?>
+                                                        <a href="<?= htmlspecialchars($pdf_url) ?>&download=1" class="btn btn-primary btn-sm mt-3 ms-2">
+                                                            <i class="bi bi-download me-1"></i> Unduh PDF
+                                                        </a>
+                                                    <?php endif; ?>
+                                                </p>
+                                            </object>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+
+                            <?php if ($can_ttd): ?>
+                                <div class="<?= ($has_kredit ? 'mt-4 pt-4 border-top' : '') ?>">
+                                    <?php if ($has_kredit): ?>
+                                        <h6 class="fw-bold mb-3"><i class="bi bi-pen me-2 text-primary"></i>Spesimen Tanda Tangan Nasabah</h6>
+                                    <?php endif; ?>
+                                    <div class="row g-3">
+                                        <!-- Upload Card Spesimen Tanda Tangan -->
+                                        <div class="col-lg-6">
+                                            <div class="card shadow-sm h-100 mb-0">
+                                                <div class="card-header bg-primary text-white">
+                                                    <h5 class="card-title mb-0"><i class="bi bi-upload me-2"></i>Upload Spesimen Tanda Tangan</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p class="text-muted small mb-3">Unggah file spesimen tanda tangan (format JPG / PNG).</p>
+                                                    <form action="" method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadFormSpesimen">
+                                                        <div class="mb-3">
+                                                            <div class="upload-drop-zone" id="dropZoneSpesimen">
+                                                                <i class="bi bi-cloud-upload fs-2"></i>
+                                                                <p class="mb-2">Drag & drop file gambar di sini atau klik untuk memilih</p>
+                                                                <input type="file" name="files[]" class="form-control" accept=".jpg,.jpeg,.png" multiple required id="fileInputSpesimen" style="display: none;">
+                                                                <button type="button" class="btn btn-outline-primary" id="browseButtonSpesimen">Pilih File</button>
+                                                            </div>
+                                                            <div class="selected-files-list" id="filesListSpesimen"></div>
+                                                        </div>
+                                                        <button type="submit" name="upload_ttd" class="btn btn-primary" id="uploadButtonSpesimen" disabled>Unggah</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Cek Spesimen -->
+                                        <div class="col-lg-6">
+                                            <div class="card shadow-sm h-100 mb-0">
+                                                <div class="card-header bg-primary text-white">
+                                                    <h5 class="card-title mb-0"><i class="bi bi-search me-2"></i>Cek Spesimen Tanda Tangan</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p class="text-muted small mb-3">Verifikasi tanda tangan penarikan dengan memasukkan nomor rekening.</p>
+                                                    <form method="POST" class="needs-validation" action="#previewCardTTD" novalidate>
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-medium">Nomor Rekening:</label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text bg-body-tertiary"><i class="bi bi-credit-card-2-front"></i></span>
+                                                                <input type="text" name="norek" class="form-control" placeholder="Contoh: 102.34.5678" required <?= ($role === 'teller' ? 'autofocus' : '') ?>>
+                                                            </div>
+                                                            <div class="invalid-feedback">
+                                                                Nomor rekening harus diisi
+                                                            </div>
+                                                        </div>
+                                                        <button type="submit" name="cek_ttd" class="btn btn-primary">
+                                                            <i class="bi bi-search me-1"></i> Cek Tanda Tangan
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <?php if (isset($jpg_url_ttd)): ?>
+                                        <div class="card shadow-sm mt-4 mb-3" id="previewCardTTD">
+                                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0"><i class="bi bi-file-earmark-image me-2"></i>Preview Spesimen Tanda Tangan</h5>
+                                                <a href="<?= htmlspecialchars($jpg_url_ttd) ?>" target="_blank" class="btn btn-light text-dark btn-sm me-2">
+                                                    <i class="bi bi-box-arrow-up-right me-1"></i> Buka di Tab Baru
+                                                </a>
+                                            </div>
+                                            <div class="card-body text-center p-4">
+                                                <img src="<?= htmlspecialchars($jpg_url_ttd) ?>" alt="Preview Spesimen Tanda Tangan" class="img-fluid rounded border p-1 bg-white shadow-sm" style="max-height: 500px;">
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Tab 2: Regulasi (SK & SOP) -->
+                    <div class="tab-pane fade <?= ($default_tab_id === 'tab-regulasi-tab' ? 'show active' : '') ?>" id="tab-regulasi" role="tabpanel" aria-labelledby="tab-regulasi-tab">
+                        <?php if ($role === 'admin_dok' || $role === 'ti_admin'): ?>
+                            <div class="row g-3">
+                                <!-- Upload Card SK -->
+                                <div class="col-lg-6">
+                                    <div class="card shadow-sm h-100 mb-0">
+                                        <div class="card-header bg-primary text-white">
+                                            <h5 class="card-title mb-0"><i class="bi bi-upload me-2"></i>Upload Berkas SK</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <form action="" method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadFormSK">
+                                                <div class="mb-3">
+                                                    <label for="nomor_sk" class="form-label fw-medium">Nomor SK</label>
+                                                    <input type="text" class="form-control" id="nomor_sk" name="nomor_sk" placeholder="Contoh: SK/DIR/2026/012" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="judul_sk" class="form-label fw-medium">Judul SK</label>
+                                                    <input type="text" class="form-control" id="judul_sk" name="judul_sk" placeholder="Judul penetapan keputusan direksi..." required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="tahun_disahkan_sk" class="form-label fw-medium">Tahun Disahkan</label>
+                                                    <input type="number" class="form-control" id="tahun_disahkan_sk" name="tahun_disahkan_sk" value="<?= date('Y') ?>" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <div class="upload-drop-zone" id="dropZoneSK">
+                                                        <i class="bi bi-cloud-upload fs-2"></i>
+                                                        <p class="mb-2">Drag & drop file SK PDF di sini atau klik untuk memilih</p>
+                                                        <input type="file" name="files[]" class="form-control" accept=".pdf" multiple required id="fileInputSK" style="display: none;">
+                                                        <button type="button" class="btn btn-outline-primary" id="browseButtonSK">Pilih File</button>
+                                                    </div>
+                                                    <div class="selected-files-list" id="filesListSK"></div>
+                                                </div>
+                                                <button type="submit" name="upload_sk" class="btn btn-primary" id="uploadButtonSK" disabled>Unggah</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Upload Card SOP -->
+                                <div class="col-lg-6">
+                                    <div class="card shadow-sm h-100 mb-0">
+                                        <div class="card-header bg-primary text-white">
+                                            <h5 class="card-title mb-0"><i class="bi bi-upload me-2"></i>Upload Berkas SOP</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <form action="" method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadFormSOP">
+                                                <div class="mb-3">
+                                                    <label for="nomor_sop" class="form-label fw-medium">Nomor SOP</label>
+                                                    <input type="text" class="form-control" id="nomor_sop" name="nomor_sop" placeholder="Contoh: SOP/OPS/2026/005" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="judul_sop" class="form-label fw-medium">Judul SOP</label>
+                                                    <input type="text" class="form-control" id="judul_sop" name="judul_sop" placeholder="Judul standar operasional prosedur..." required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="tahun_disahkan_sop" class="form-label fw-medium">Tahun Disahkan</label>
+                                                    <input type="number" class="form-control" id="tahun_disahkan_sop" name="tahun_disahkan_sop" value="<?= date('Y') ?>" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <div class="upload-drop-zone" id="dropZoneSOP">
+                                                        <i class="bi bi-cloud-upload fs-2"></i>
+                                                        <p class="mb-2">Drag & drop file SOP PDF di sini atau klik untuk memilih</p>
+                                                        <input type="file" name="files[]" class="form-control" accept=".pdf" multiple required id="fileInputSOP" style="display: none;">
+                                                        <button type="button" class="btn btn-outline-primary" id="browseButtonSOP">Pilih File</button>
+                                                    </div>
+                                                    <div class="selected-files-list" id="filesListSOP"></div>
+                                                </div>
+                                                <button type="submit" name="upload_sop" class="btn btn-primary" id="uploadButtonSOP" disabled>Unggah</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="modal-footer border-0 pt-0 pb-4">
-                                <button type="button" class="btn btn-lg px-4 rounded-3" data-bs-dismiss="modal">Tutup</button>
+                        <?php else: ?>
+                            <!-- Non-admin Readers (Marketing, Teller, Kredit, Direksi) -->
+                            <div class="card border-0 bg-body-tertiary p-4 mb-4 text-center rounded-3">
+                                <div class="d-inline-flex align-items-center justify-content-center mx-auto mb-2 text-primary" style="width: 48px; height: 48px; background: rgba(2, 132, 199, 0.1); border-radius: 50%;">
+                                    <i class="bi bi-book fs-4"></i>
+                                </div>
+                                <h5 class="fw-bold mb-1">Pusat Regulasi & Kebijakan Operasional</h5>
+                                <p class="text-muted small mb-0 mx-auto" style="max-width: 600px;">
+                                    Akses dan cari seluruh Surat Keputusan Direksi (SK) serta Standar Operasional Prosedur (SOP) resmi untuk pedoman operasional perbankan.
+                                </p>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- SK Preview Section -->
+                        <?php if (isset($pdf_url_sk)): ?>
+                            <div class="card shadow-sm mt-4 mb-4" id="previewCardPDF">
+                                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="bi bi-file-earmark-pdf me-2"></i>Preview Berkas SK</h5>
+                                    <div class="btn-group">
+                                        <a href="<?= htmlspecialchars($pdf_url_sk) ?>" target="_blank" class="btn btn-light btn-sm me-2">
+                                            <i class="bi bi-box-arrow-up-right me-1"></i> Buka di Tab Baru
+                                        </a>
+                                        <a href="<?= htmlspecialchars($pdf_url_sk) ?>&download=1" class="btn btn-light btn-sm">
+                                            <i class="bi bi-download me-1"></i> Unduh PDF
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <object
+                                        data="<?= htmlspecialchars($pdf_url_sk) ?>"
+                                        type="application/pdf"
+                                        width="100%"
+                                        height="600px">
+                                        <p class="text-center py-4">
+                                            Browser Anda tidak mendukung preview PDF langsung.
+                                            <br>
+                                            <a href="<?= htmlspecialchars($pdf_url_sk) ?>" target="_blank" class="btn btn-primary btn-sm mt-3">
+                                                <i class="bi bi-box-arrow-up-right me-1"></i> Buka di Tab Baru
+                                            </a>
+                                            <a href="<?= htmlspecialchars($pdf_url_sk) ?>&download=1" class="btn btn-primary btn-sm mt-3 ms-2">
+                                                <i class="bi bi-download me-1"></i> Unduh PDF
+                                            </a>
+                                        </p>
+                                    </object>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- SOP PDF Preview Section -->
+                        <?php if (isset($pdf_url_sop)): ?>
+                            <div class="card shadow-sm mt-4 mb-4" id="previewCardPDF">
+                                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="bi bi-file-earmark-pdf me-2"></i>Preview Berkas SOP</h5>
+                                    <div class="btn-group">
+                                        <a href="<?= htmlspecialchars($pdf_url_sop) ?>" target="_blank" class="btn btn-light btn-sm me-2">
+                                            <i class="bi bi-box-arrow-up-right me-1"></i> Buka di Tab Baru
+                                        </a>
+                                        <a href="<?= htmlspecialchars($pdf_url_sop) ?>&download=1" class="btn btn-light btn-sm">
+                                            <i class="bi bi-download me-1"></i> Unduh PDF
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <object
+                                        data="<?= htmlspecialchars($pdf_url_sop) ?>"
+                                        type="application/pdf"
+                                        width="100%"
+                                        height="600px">
+                                        <p class="text-center py-4">
+                                            Browser Anda tidak mendukung preview PDF langsung.
+                                            <br>
+                                            <a href="<?= htmlspecialchars($pdf_url_sop) ?>" target="_blank" class="btn btn-primary btn-sm mt-3">
+                                                <i class="bi bi-box-arrow-up-right me-1"></i> Buka di Tab Baru
+                                            </a>
+                                            <a href="<?= htmlspecialchars($pdf_url_sop) ?>&download=1" class="btn btn-primary btn-sm mt-3 ms-2">
+                                                <i class="bi bi-download me-1"></i> Unduh PDF
+                                            </a>
+                                        </p>
+                                    </object>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Quick Navigation to Regulation Databases -->
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <div class="card p-3 h-100 shadow-sm">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <h6 class="fw-bold mb-0"><i class="bi bi-file-earmark-text text-primary me-2"></i>Pangkalan Data SK</h6>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><?= number_format($stats['sk']) ?> Dokumen</span>
+                                    </div>
+                                    <p class="text-muted small mb-3">Cari, verifikasi nomor keputusan, dan akses berkas regulasi Surat Keputusan.</p>
+                                    <a href="cek_sk.php" class="btn btn-outline-primary btn-sm mt-auto">
+                                        <i class="bi bi-search me-1"></i> Buka Pencarian SK
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card p-3 h-100 shadow-sm">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <h6 class="fw-bold mb-0"><i class="bi bi-file-earmark-ruled text-warning me-2"></i>Pangkalan Data SOP</h6>
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle"><?= number_format($stats['sop']) ?> Prosedur</span>
+                                    </div>
+                                    <p class="text-muted small mb-3">Pedoman Standar Operasional Prosedur kerja seluruh divisi dan cabang.</p>
+                                    <a href="cek_sop.php" class="btn btn-outline-warning btn-sm mt-auto">
+                                        <i class="bi bi-search me-1"></i> Buka Pencarian SOP
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Log Sistem / Quick Access -->
+                    <div class="tab-pane fade" id="tab-log" role="tabpanel" aria-labelledby="tab-log-tab">
+                        <!-- Quick Access Section -->
+                        <h6 class="fw-bold mb-3"><i class="bi bi-lightning-charge text-warning me-2"></i>Pintasan Akses Cepat (Quick Access)</h6>
+                        <div class="row g-3 mb-4">
+                            <?php if ($role === 'ti_admin'): ?>
+                                <div class="col-sm-6 col-md-4 col-xl-2">
+                                    <a href="add_user.php" class="quick-access-card text-center h-100">
+                                        <div class="mb-2"><i class="bi bi-person-gear fs-2 text-primary"></i></div>
+                                        <div class="fw-semibold small">Kelola User</div>
+                                        <small class="text-muted d-block mt-1">Admin TI</small>
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                            <div class="col-sm-6 col-md-4 col-xl-2">
+                                <a href="disposisi/disposisi.php" class="quick-access-card text-center h-100">
+                                    <div class="mb-2"><i class="bi bi-envelope-arrow-down fs-2 text-info"></i></div>
+                                    <div class="fw-semibold small">Surat Masuk</div>
+                                    <small class="text-muted d-block mt-1"><?= $stats['disp_masuk'] ?> Arsip</small>
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-4 col-xl-2">
+                                <a href="disposisi/disposisi_keluar.php" class="quick-access-card text-center h-100">
+                                    <div class="mb-2"><i class="bi bi-envelope-arrow-up fs-2 text-primary"></i></div>
+                                    <div class="fw-semibold small">Surat Keluar</div>
+                                    <small class="text-muted d-block mt-1"><?= $stats['disp_keluar'] ?> Arsip</small>
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-4 col-xl-2">
+                                <a href="cek_sk.php" class="quick-access-card text-center h-100">
+                                    <div class="mb-2"><i class="bi bi-file-earmark-text fs-2 text-success"></i></div>
+                                    <div class="fw-semibold small">Arsip SK</div>
+                                    <small class="text-muted d-block mt-1"><?= $stats['sk'] ?> Berkas</small>
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-4 col-xl-2">
+                                <a href="cek_sop.php" class="quick-access-card text-center h-100">
+                                    <div class="mb-2"><i class="bi bi-file-earmark-ruled fs-2 text-warning"></i></div>
+                                    <div class="fw-semibold small">Arsip SOP</div>
+                                    <small class="text-muted d-block mt-1"><?= $stats['sop'] ?> Berkas</small>
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-4 col-xl-2">
+                                <a href="disposisi/export_excel.php" class="quick-access-card text-center h-100">
+                                    <div class="mb-2"><i class="bi bi-file-earmark-excel fs-2 text-success"></i></div>
+                                    <div class="fw-semibold small">Ekspor Excel</div>
+                                    <small class="text-muted d-block mt-1">Laporan</small>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row g-4">
+                            <!-- Aktivitas Terkini (Disposisi Terbaru) -->
+                            <div class="col-lg-7">
+                                <div class="card shadow-sm h-100 mb-0">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Aktivitas Disposisi Surat Terkini</span>
+                                        <a href="disposisi/disposisi.php" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;">Lihat Semua</a>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <?php if (empty($recent_activities)): ?>
+                                            <div class="p-4 text-center text-muted">
+                                                <i class="bi bi-inbox fs-3 d-block mb-1"></i>
+                                                <span class="small">Belum ada riwayat aktivitas surat.</span>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th class="ps-3">Tipe</th>
+                                                            <th>Nomor / Pihak</th>
+                                                            <th>Perihal</th>
+                                                            <th class="pe-3">Tanggal</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($recent_activities as $act): ?>
+                                                            <tr>
+                                                                <td class="ps-3">
+                                                                    <?php if ($act['tipe'] === 'masuk'): ?>
+                                                                        <span class="badge bg-info-subtle text-info border border-info-subtle">Masuk</span>
+                                                                    <?php else: ?>
+                                                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Keluar</span>
+                                                                    <?php endif; ?>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="fw-semibold text-truncate" style="max-width: 160px;"><?= htmlspecialchars($act['nomor'] ?: '-') ?></div>
+                                                                    <small class="text-muted text-truncate d-block" style="max-width: 160px;"><?= htmlspecialchars($act['pihak'] ?: '-') ?></small>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="text-truncate text-muted" style="max-width: 220px;" title="<?= htmlspecialchars($act['perihal']) ?>">
+                                                                        <?= htmlspecialchars($act['perihal'] ?: '-') ?>
+                                                                    </div>
+                                                                </td>
+                                                                <td class="pe-3 text-nowrap text-muted small">
+                                                                    <?= $act['tanggal'] ? date('d/m/Y', strtotime($act['tanggal'])) : '-' ?>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- System & Environment Info -->
+                            <div class="col-lg-5">
+                                <div class="card shadow-sm h-100 mb-0">
+                                    <div class="card-header">
+                                        <span class="fw-bold"><i class="bi bi-hdd-network me-2 text-info"></i>Status Sistem & Lingkungan</span>
+                                    </div>
+                                    <div class="card-body p-3">
+                                        <ul class="list-group list-group-flush small">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                                <span class="text-muted"><i class="bi bi-person me-2"></i>Pengguna Aktif</span>
+                                                <span class="fw-semibold"><?= htmlspecialchars($_SESSION['user']['username'] ?? '-') ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                                <span class="text-muted"><i class="bi bi-shield-lock me-2"></i>Hak Akses</span>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle text-uppercase"><?= htmlspecialchars($role) ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                                <span class="text-muted"><i class="bi bi-database me-2"></i>Koneksi Database</span>
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>MySQL PDO OK</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                                <span class="text-muted"><i class="bi bi-code-square me-2"></i>Versi PHP</span>
+                                                <span class="font-monospace text-body"><?= PHP_VERSION ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                                <span class="text-muted"><i class="bi bi-clock me-2"></i>Waktu Server</span>
+                                                <span class="text-body"><?= date('d M Y, H:i') ?> WIB</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- PHP Alert Handler -->
-                <?php foreach (['sk', 'sop', 'ttd', 'kredit'] as $type): ?>
-                    <?php if (isset(${"message_$type"})): ?>
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const modal = new bootstrap.Modal(document.getElementById('alertModal'));
-                                const alertModal = document.getElementById('alertModal');
-
-                                alertModal.querySelector('.modal-header').className = 'modal-header border-0 py-3 bg-success-subtle';
-                                alertModal.querySelector('.modal-title').textContent = 'Berhasil!';
-                                alertModal.querySelector('.alert-icon i').className = 'bi bi-check-circle-fill text-success';
-                                alertModal.querySelector('.alert-message').innerHTML = '<?= htmlspecialchars(${"message_$type"}) ?>';
-                                alertModal.querySelector('.modal-footer .btn').className = 'btn btn-success btn-lg px-4 rounded-3';
-
-                                modal.show();
-                            });
-                        </script>
-                    <?php endif; ?>
-
-                    <?php if (isset(${"error_$type"})): ?>
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const modal = new bootstrap.Modal(document.getElementById('alertModal'));
-                                const alertModal = document.getElementById('alertModal');
-
-                                alertModal.querySelector('.modal-header').className = 'modal-header border-0 py-3 bg-danger-subtle';
-                                alertModal.querySelector('.modal-title').textContent = 'Gagal!';
-                                alertModal.querySelector('.alert-icon i').className = 'bi bi-exclamation-circle-fill text-danger';
-                                alertModal.querySelector('.alert-message').innerHTML = '<?= htmlspecialchars(${"error_$type"}) ?>';
-                                alertModal.querySelector('.modal-footer .btn').className = 'btn btn-danger btn-lg px-4 rounded-3';
-
-                                modal.show();
-                            });
-                        </script>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-
-                <!-- SK Preview Section -->
-                <?php if (isset($pdf_url_sk)): ?>
-                    <div class="card mt-4" id="previewCardPDF">
-                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0"><i class="bi bi-file-earmark-pdf"></i> Preview Berkas SK</h5>
-                            <div class="btn-group">
-                                <a href="<?= htmlspecialchars($pdf_url_sk) ?>" target="_blank" class="btn btn-light btn-sm me-2">
-                                    <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
-                                </a>
-                                <?php if ($role === 'admin_dok' || $role === 'ti_admin'): ?>
-                                    <a href="<?= htmlspecialchars($pdf_url_sk) ?>&download=1" class="btn btn-light btn-sm">
-                                        <i class="bi bi-download"></i> Unduh PDF
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <object
-                                data="<?= htmlspecialchars($pdf_url_sk) ?>"
-                                type="application/pdf"
-                                width="100%"
-                                height="600px">
-                                <p class="text-center">
-                                    Browser Anda tidak mendukung preview PDF.
-                                    <br>
-                                    <a href="<?= htmlspecialchars($pdf_url_sk) ?>" target="_blank" class="btn btn-primary btn-sm mt-2">
-                                        <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
-                                    </a>
-                                    <?php if ($role === 'admin_dok' || $role === 'ti_admin'): ?>
-                                        <a href="<?= htmlspecialchars($pdf_url_sk) ?>&download=1" class="btn btn-primary btn-sm mt-2 ms-2">
-                                            <i class="bi bi-download"></i> Unduh PDF
-                                        </a>
-                                    <?php endif; ?>
-                                </p>
-                            </object>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <!-- SOP PDF Preview Section -->
-                <?php if (isset($pdf_url_sop)): ?>
-                    <div class="card mt-4" id="previewCardPDF">
-                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0"><i class="bi bi-file-earmark-pdf"></i> Preview Berkas SOP</h5>
-                            <div class="btn-group">
-                                <a href="<?= htmlspecialchars($pdf_url_sop) ?>" target="_blank" class="btn btn-light btn-sm me-2">
-                                    <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
-                                </a>
-                                <?php if ($role === 'admin_dok' || $role === 'ti_admin'): ?>
-                                    <a href="<?= htmlspecialchars($pdf_url_sop) ?>&download=1" class="btn btn-light btn-sm">
-                                        <i class="bi bi-download"></i> Unduh PDF
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <object
-                                data="<?= htmlspecialchars($pdf_url_sop) ?>"
-                                type="application/pdf"
-                                width="100%"
-                                height="600px">
-                                <p class="text-center">
-                                    Browser Anda tidak mendukung preview PDF.
-                                    <br>
-                                    <a href="<?= htmlspecialchars($pdf_url_sop) ?>" target="_blank" class="btn btn-primary btn-sm mt-2">
-                                        <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
-                                    </a>
-                                    <?php if ($role === 'admin_dok' || $role === 'ti_admin'): ?>
-                                        <a href="<?= htmlspecialchars($pdf_url_sop) ?>&download=1" class="btn btn-primary btn-sm mt-2 ms-2">
-                                            <i class="bi bi-download"></i> Unduh PDF
-                                        </a>
-                                    <?php endif; ?>
-                                </p>
-                            </object>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-            </div>
+</div>
         </div>
     </div>
 
@@ -745,7 +949,36 @@ try {
                 }
             }
         });
-    </script>
+    
+        // Tab Persistence & Context Auto-Switching
+        document.addEventListener('DOMContentLoaded', function() {
+            const triggerTabList = document.querySelectorAll('#dashboardTab button[data-bs-toggle="tab"]');
+            triggerTabList.forEach(function(triggerEl) {
+                triggerEl.addEventListener('shown.bs.tab', function(event) {
+                    sessionStorage.setItem('dashboard_active_tab', event.target.id);
+                });
+            });
+
+            // Auto-activate tab based on context or session
+            const defaultTabId = '<?= $default_tab_id ?>';
+            <?php if (isset($pdf_url_sk) || isset($pdf_url_sop) || isset($_POST['upload_sk']) || isset($_POST['upload_sop'])): ?>
+                let targetTabId = 'tab-regulasi-tab';
+            <?php elseif (isset($_GET['tab'])): ?>
+                let targetTabId = 'tab-<?= htmlspecialchars($_GET['tab']) ?>-tab';
+            <?php else: ?>
+                let targetTabId = sessionStorage.getItem('dashboard_active_tab') || defaultTabId;
+            <?php endif; ?>
+
+            let targetTabEl = document.getElementById(targetTabId);
+            if (!targetTabEl) {
+                targetTabEl = document.getElementById(defaultTabId);
+            }
+            if (targetTabEl) {
+                const tabInstance = bootstrap.Tab.getOrCreateInstance(targetTabEl);
+                tabInstance.show();
+            }
+        });
+</script>
 </body>
 
 </html>

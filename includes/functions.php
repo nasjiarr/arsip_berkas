@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once 'auth.php';
 
 $network_path_kredit = PATH_BERKAS_KREDIT;
 $network_path_ttd = PATH_TTD;
@@ -40,10 +41,12 @@ if (isset($_POST['upload']) && ($role === 'ti_admin' || $role === 'adminkredit')
 
         // Set messages based on results
         if ($success_count > 0) {
-            $message_kredit = "Berhasil mengupload " . $success_count . " file.";
+            $message_kredit = "Berhasil mengupload " . $success_count . " berkas kredit.";
+            set_flash_message('success', $message_kredit);
         }
         if (!empty($error_files)) {
             $error_kredit = "Gagal mengupload file berikut: " . implode(", ", $error_files);
+            set_flash_message('danger', $error_kredit);
         }
     }
 }
@@ -61,10 +64,12 @@ if (isset($_POST['cek']) && !empty($_POST['norek'])) {
         // Verify file exists and is readable
         if (!is_readable($pdf_file)) {
             $error_kredit = "File ditemukan tapi tidak dapat diakses. Hubungi administrator.";
+            set_flash_message('danger', $error_kredit);
             unset($pdf_url);
         }
     } else {
         $error_kredit = "File PDF Berkas Kredit untuk nomor berkas tersebut tidak ditemukan.";
+        set_flash_message('warning', $error_kredit);
     }
 }
 
@@ -107,9 +112,11 @@ if (isset($_POST['upload_ttd']) && ($role === 'teller' || $role === 'ti_admin'))
         // Set pesan berdasarkan hasil
         if ($success_count > 0) {
             $message_ttd = "Berhasil mengupload " . $success_count . " file spesimen tanda tangan.";
+            set_flash_message('success', $message_ttd);
         }
         if (!empty($error_files)) {
             $error_ttd = "Gagal mengupload file berikut: " . implode(", ", $error_files);
+            set_flash_message('danger', $error_ttd);
         }
     }
 }
@@ -128,10 +135,12 @@ if (isset($_POST['cek_ttd']) && !empty($_POST['norek'])) {
         // Verify file exists and is readable
         if (!is_readable($jpg_file_ttd)) {
             $error_ttd = "File ditemukan tapi tidak dapat diakses. Hubungi administrator.";
+            set_flash_message('danger', $error_ttd);
             unset($jpg_url_ttd);
         }
     } else {
         $error_ttd = "File JPG spesimen tanda tangan untuk nomor rekening tersebut tidak ditemukan.";
+        set_flash_message('warning', $error_ttd);
     }
 }
 
@@ -196,10 +205,12 @@ if (isset($_POST['upload_sk']) && ($role === 'admin_dok' || $role === 'ti_admin'
 
         // Set pesan berdasarkan hasil
         if ($success_count > 0) {
-            $message_sk = "Berhasil mengupload file SK";
+            $message_sk = "Berhasil mengupload berkas SK: " . htmlspecialchars($_POST['judul_sk'] ?? '');
+            set_flash_message('success', $message_sk);
         }
         if (!empty($error_files)) {
             $error_sk = "Gagal mengupload file berikut: " . implode(", ", $error_files);
+            set_flash_message('danger', $error_sk);
         }
     }
 }
@@ -218,10 +229,12 @@ if (isset($_POST['cek_sk']) && !empty($_POST['norek'])) {
         // Verifikasi file
         if (!is_readable($pdf_file_sk)) {
             $error_sk = "File ditemukan tapi tidak dapat diakses. Hubungi administrator.";
+            set_flash_message('danger', $error_sk);
             unset($pdf_url_sk);
         }
     } else {
         $error_sk = "File SK tidak ditemukan.";
+        set_flash_message('warning', $error_sk);
     }
 }
 
@@ -285,10 +298,12 @@ if (isset($_POST['upload_sop']) && ($role === 'admin_dok' || $role === 'ti_admin
 
         // Set pesan berdasarkan hasil
         if ($success_count > 0) {
-            $message_sop = "Berhasil mengupload file SOP";
+            $message_sop = "Berhasil mengupload berkas SOP: " . htmlspecialchars($_POST['judul_sop'] ?? '');
+            set_flash_message('success', $message_sop);
         }
         if (!empty($error_files)) {
             $error_sop = "Gagal mengupload file berikut: " . implode(", ", $error_files);
+            set_flash_message('danger', $error_sop);
         }
     }
 }
@@ -303,9 +318,11 @@ if (isset($_POST['cek_sop']) && !empty($_POST['norek'])) {
 
         if (!is_readable($pdf_file_sop)) {
             $error_sop = "File ditemukan tapi tidak dapat diakses. Hubungi administrator.";
+            set_flash_message('danger', $error_sop);
             unset($pdf_url_sop);
         }
     } else {
         $error_sop = "File SOP tidak ditemukan.";
+        set_flash_message('warning', $error_sop);
     }
 }

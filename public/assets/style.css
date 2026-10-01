@@ -265,6 +265,59 @@ body {
     justify-content: center;
 }
 
+/* Custom Tabs (Tabbed Utility Interface) */
+.nav-tabs-custom {
+    border-bottom: 2px solid var(--slate-200);
+    gap: 0.35rem;
+}
+
+.nav-tabs-custom .nav-link {
+    color: var(--slate-600);
+    font-weight: 500;
+    font-size: 0.925rem;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 10px 10px 0 0;
+    transition: all 0.2s ease;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-tabs-custom .nav-link:hover {
+    color: var(--brand-primary);
+    background-color: var(--slate-100);
+    border-bottom-color: var(--slate-300);
+}
+
+.nav-tabs-custom .nav-link.active {
+    color: var(--brand-primary);
+    background-color: transparent;
+    font-weight: 600;
+    border-bottom: 2px solid var(--brand-primary);
+}
+
+/* Quick Access Action Cards */
+.quick-access-card {
+    border-radius: 12px;
+    border: 1px solid var(--slate-200);
+    background-color: #ffffff;
+    padding: 1.25rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.quick-access-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--brand-primary);
+    color: inherit;
+}
+
 .card-header {
     border-bottom: 1px solid var(--slate-200);
     padding: 0.85rem 1.25rem;
@@ -629,6 +682,36 @@ body {
 
 [data-bs-theme="dark"] .stat-card:hover {
     border-color: #374151;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme="dark"] .nav-tabs-custom {
+    border-bottom-color: #1f2937;
+}
+
+[data-bs-theme="dark"] .nav-tabs-custom .nav-link {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .nav-tabs-custom .nav-link:hover {
+    color: #38bdf8;
+    background-color: rgba(255, 255, 255, 0.04);
+    border-bottom-color: #374151;
+}
+
+[data-bs-theme="dark"] .nav-tabs-custom .nav-link.active {
+    color: #38bdf8;
+    border-bottom-color: #38bdf8;
+    background-color: transparent;
+}
+
+[data-bs-theme="dark"] .quick-access-card {
+    background-color: #111827;
+    border-color: #1f2937;
+}
+
+[data-bs-theme="dark"] .quick-access-card:hover {
+    border-color: #38bdf8;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
