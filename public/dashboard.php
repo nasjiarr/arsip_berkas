@@ -2,6 +2,27 @@
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
 check_login();
+
+// ponytail: aggregate counts for dashboard metrics summary; add memcached or redis caching if table exceeds 100k rows.
+$stats = [
+    'users' => 0,
+    'disposisi' => 0,
+    'disp_masuk' => 0,
+    'disp_keluar' => 0,
+    'sk' => 0,
+    'sop' => 0
+];
+
+try {
+    $stats['users'] = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+    $stats['disp_masuk'] = (int) $pdo->query("SELECT COUNT(*) FROM disposisi_surat")->fetchColumn();
+    $stats['disp_keluar'] = (int) $pdo->query("SELECT COUNT(*) FROM disposisi_keluar")->fetchColumn();
+    $stats['disposisi'] = $stats['disp_masuk'] + $stats['disp_keluar'];
+    $stats['sk'] = (int) $pdo->query("SELECT COUNT(*) FROM sk_table")->fetchColumn();
+    $stats['sop'] = (int) $pdo->query("SELECT COUNT(*) FROM sop_table")->fetchColumn();
+} catch (Exception $e) {
+    // Graceful fallback to default 0
+}
 ?>
 
 <!DOCTYPE html>
@@ -32,6 +53,101 @@ check_login();
                         <span class="badge border py-2 px-3" style="background: rgba(255,255,255,0.12); color: #e0f2fe; font-size: 0.8rem;">
                             <i class="bi bi-shield-check me-1"></i>Role: <?= strtoupper(htmlspecialchars($role)) ?>
                         </span>
+                    </div>
+                </div>
+
+                <!-- Metrics Summary (Stat Cards) -->
+                <div class="row g-3 mb-4">
+                    <!-- Total Pengguna -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card stat-card h-100 p-3 mb-0">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.72rem;">Total Pengguna</span>
+                                <div class="stat-icon" style="background: rgba(2, 132, 199, 0.12); color: var(--brand-primary, #0284c7);">
+                                    <i class="bi bi-people fs-5"></i>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-baseline gap-2 mb-2">
+                                <h3 class="mb-0 fw-bold"><?= number_format($stats['users']) ?></h3>
+                                <span class="text-muted small">Akun</span>
+                            </div>
+                            <div class="mt-auto pt-2 border-top small text-muted d-flex align-items-center justify-content-between">
+                                <?php if ($role === 'ti_admin'): ?>
+                                    <a href="add_user.php" class="text-decoration-none small text-primary fw-medium d-flex align-items-center gap-1">
+                                        <span>Kelola User</span> <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                <?php else: ?>
+                                    <span>Akun Terdaftar</span>
+                                <?php endif; ?>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.65rem;">Sistem</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disposisi Surat -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card stat-card h-100 p-3 mb-0">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.72rem;">Disposisi Surat</span>
+                                <div class="stat-icon" style="background: rgba(14, 165, 233, 0.12); color: #0284c7;">
+                                    <i class="bi bi-envelope-paper fs-5"></i>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-baseline gap-2 mb-2">
+                                <h3 class="mb-0 fw-bold"><?= number_format($stats['disposisi']) ?></h3>
+                                <span class="text-muted small">Surat</span>
+                            </div>
+                            <div class="mt-auto pt-2 border-top small text-muted d-flex align-items-center justify-content-between">
+                                <span>Masuk: <strong class="text-body"><?= $stats['disp_masuk'] ?></strong> &bull; Keluar: <strong class="text-body"><?= $stats['disp_keluar'] ?></strong></span>
+                                <a href="disposisi/disposisi.php" class="text-decoration-none text-muted" title="Buka Disposisi">
+                                    <i class="bi bi-arrow-up-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total SK -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card stat-card h-100 p-3 mb-0">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.72rem;">Total Berkas SK</span>
+                                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                                    <i class="bi bi-file-earmark-text fs-5"></i>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-baseline gap-2 mb-2">
+                                <h3 class="mb-0 fw-bold"><?= number_format($stats['sk']) ?></h3>
+                                <span class="text-muted small">Dokumen</span>
+                            </div>
+                            <div class="mt-auto pt-2 border-top small text-muted d-flex align-items-center justify-content-between">
+                                <a href="cek_sk.php" class="text-decoration-none small text-success fw-medium d-flex align-items-center gap-1">
+                                    <span>Cek SK</span> <i class="bi bi-arrow-right"></i>
+                                </a>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">Regulasi</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total SOP -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card stat-card h-100 p-3 mb-0">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.72rem;">Total Berkas SOP</span>
+                                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                                    <i class="bi bi-file-earmark-ruled fs-5"></i>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-baseline gap-2 mb-2">
+                                <h3 class="mb-0 fw-bold"><?= number_format($stats['sop']) ?></h3>
+                                <span class="text-muted small">Dokumen</span>
+                            </div>
+                            <div class="mt-auto pt-2 border-top small text-muted d-flex align-items-center justify-content-between">
+                                <a href="cek_sop.php" class="text-decoration-none small text-warning fw-medium d-flex align-items-center gap-1">
+                                    <span>Cek SOP</span> <i class="bi bi-arrow-right"></i>
+                                </a>
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle" style="font-size: 0.65rem;">Prosedur</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
