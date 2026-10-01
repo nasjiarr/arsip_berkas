@@ -46,13 +46,14 @@ try {
     }
 
     // Modify the SQL query conditions
+    // ponytail: match legacy codes ('1','2') and normalized ('001','002') or FK kategori_id; upgrade when fully migrated to FK.
     if (!empty($selected_kategori)) {
         if ($selected_kategori === 'BI') {
-            $base_query .= " AND kode = '1'";
+            $base_query .= " AND (kode IN ('1', '001') OR kategori_id = 1)";
         } elseif ($selected_kategori === 'OJK') {
-            $base_query .= " AND kode = '2'";
+            $base_query .= " AND (kode IN ('2', '002') OR kategori_id = 2)";
         } elseif ($selected_kategori === 'UMUM') {
-            $base_query .= " AND kode NOT IN ('1', '2')";
+            $base_query .= " AND (kode NOT IN ('1', '2', '001', '002') AND (kategori_id NOT IN (1, 2) OR kategori_id IS NULL))";
         }
     }
 
@@ -323,10 +324,11 @@ function getNamaBulan($bulan)
                                             $kode = trim($row['kode'] ?? '');
                                             $kategori_label = 'Surat Umum';
                                             $kategori_badge = '<span class="badge badge-umum">Umum</span>';
-                                            if ($kode === '1' || $kode === '001') {
+                                            $kat_id = (int)($row['kategori_id'] ?? 0);
+                                            if ($kode === '1' || $kode === '001' || $kat_id === 1) {
                                                 $kategori_label = 'Surat BI';
                                                 $kategori_badge = '<span class="badge badge-bi"><i class="bi bi-bank me-1"></i>BI</span>';
-                                            } elseif ($kode === '2' || $kode === '002') {
+                                            } elseif ($kode === '2' || $kode === '002' || $kat_id === 2) {
                                                 $kategori_label = 'Surat OJK';
                                                 $kategori_badge = '<span class="badge badge-ojk"><i class="bi bi-shield-check me-1"></i>OJK</span>';
                                             }

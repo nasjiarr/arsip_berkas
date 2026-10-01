@@ -77,13 +77,14 @@ try {
     }
 
     // Add category filter
+    // ponytail: match legacy codes ('1','2') and normalized ('001','002') or FK kategori_id; upgrade when fully migrated to FK.
     if (isset($_GET['kategori']) && $_GET['kategori'] !== '') {
         if ($_GET['kategori'] === 'BI') {
-            $where_conditions[] = "kode = '1'";
+            $where_conditions[] = "(kode IN ('1', '001') OR kategori_id = 1)";
         } elseif ($_GET['kategori'] === 'OJK') {
-            $where_conditions[] = "kode = '2'";
+            $where_conditions[] = "(kode IN ('2', '002') OR kategori_id = 2)";
         } elseif ($_GET['kategori'] === 'UMUM') {
-            $where_conditions[] = "kode NOT IN ('1', '2')";
+            $where_conditions[] = "(kode NOT IN ('1', '2', '001', '002') AND (kategori_id NOT IN (1, 2) OR kategori_id IS NULL))";
         }
     }
 
@@ -103,14 +104,14 @@ try {
     $row = 2;
     $nomor = 1;
     while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        // Determine category based on kode
-        $kategori = '';
-        if ($data['kode'] === '1') {
+        // Determine category based on kode and kategori_id
+        $kategori = 'Surat Umum';
+        $kode_val = trim($data['kode'] ?? '');
+        $kat_id = (int)($data['kategori_id'] ?? 0);
+        if ($kode_val === '1' || $kode_val === '001' || $kat_id === 1) {
             $kategori = 'Surat BI';
-        } elseif ($data['kode'] === '2') {
+        } elseif ($kode_val === '2' || $kode_val === '002' || $kat_id === 2) {
             $kategori = 'Surat OJK';
-        } else {
-            $kategori = 'Surat Umum';
         }
 
         $sheet->setCellValue('A' . $row, $nomor);
