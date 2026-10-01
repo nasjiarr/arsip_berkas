@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $pdo->beginTransaction();
 
         // Validate input
-        $kode = $_POST['kode'];
+        $kategori_input = $_POST['kategori_id'] ?? $_POST['kode'] ?? '';
         $tanggal_surat = $_POST['tanggal_surat'];
         $tanggal_masuk = $_POST['tanggal_masuk'];
         $nomer_surat = $_POST['nomer_surat'];
@@ -95,11 +95,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
 
-        // Lookup kategori_id
-        $stmt_kat = $pdo->prepare("SELECT id_kategori FROM kategori_surat WHERE kode_kategori = :kode OR id_kategori = :kode_int LIMIT 1");
-        $stmt_kat->execute([':kode' => $kode, ':kode_int' => (int)$kode]);
+        // Lookup category by kategori_id or fallback to kode
+        $stmt_kat = $pdo->prepare("SELECT id_kategori, kode_kategori FROM kategori_surat WHERE id_kategori = :id_kat OR kode_kategori = :kode LIMIT 1");
+        $stmt_kat->execute([':id_kat' => (int)$kategori_input, ':kode' => (string)$kategori_input]);
         $kategori_row = $stmt_kat->fetch(PDO::FETCH_ASSOC);
-        $kategori_id = $kategori_row ? (int)$kategori_row['id_kategori'] : 23;
+
+        if ($kategori_row) {
+            $kategori_id = (int)$kategori_row['id_kategori'];
+            $kode = $kategori_row['kode_kategori'];
+        } else {
+            $kategori_id = 23;
+            $kode = '023';
+        }
 
         // Update database
         $query = "UPDATE disposisi_surat SET 
@@ -140,6 +147,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+// Fetch categories for guided dropdown selection
+$categories = $pdo->query("SELECT id_kategori, kode_kategori, nama_kategori FROM kategori_surat ORDER BY kode_kategori ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+$current_kategori_id = (int)($data['kategori_id'] ?? 0);
+if ($current_kategori_id <= 0 && !empty($data['kode'])) {
+    foreach ($categories as $kat) {
+        if ($kat['kode_kategori'] === $data['kode'] || (int)$kat['kode_kategori'] === (int)$data['kode']) {
+            $current_kategori_id = (int)$kat['id_kategori'];
+            break;
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -215,14 +234,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                             <div class="row g-4">
-                                <!-- Kode & Nomor Surat -->
+                                <!-- Kategori & Nomor Surat -->
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="kode" class="form-label">Kode</label>
-                                        <input type="text" class="form-control" id="kode" name="kode"
-                                            value="<?= htmlspecialchars($data['kode']) ?>" required>
+                                        <label for="kategori_id" class="form-label">Kategori Surat</label>
+                                        <select class="form-select" id="kategori_id" name="kategori_id" required>
+                                            <option value="" disabled <?= empty($current_kategori_id) ? 'selected' : '' ?>>-- Pilih Kategori Surat --</option>
+                                            <?php foreach ($categories as $kat): ?>
+                                                <option value="<?= $kat['id_kategori'] ?>" <?= ($current_kategori_id == $kat['id_kategori']) ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($kat['kode_kategori']) ?> - <?= htmlspecialchars($kat['nama_kategori']) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
                                         <div class="invalid-feedback">
-                                            Harap isi kode surat
+                                            Harap pilih kategori surat
                                         </div>
                                     </div>
                                 </div>

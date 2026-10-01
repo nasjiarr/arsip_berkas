@@ -146,4 +146,32 @@ assert(strpos($disp_content, 'function getFileUrl') === false, 'disposisi.php mu
 assert(strpos($disp_k_content, 'function getFileUrl') === false, 'disposisi_keluar.php must not have duplicate local getFileUrl');
 echo "PASS: Standardized dynamic getFileUrl resolver verified.\n";
 
-echo "ALL DISPOSISI TESTS (CATEGORY, EXPORT SEARCH, AUTO RENUMBER, ROLE HARMONIZATION, DYNAMIC FILE URL) PASSED (100%)\n";
+// 12. Test Guided Category Dropdown and Dual-Key Synchronization
+$form_files = [
+    'add_disposisi.php' => $base_dir . '/public/disposisi/add_disposisi.php',
+    'add_disposisi_keluar.php' => $base_dir . '/public/disposisi/add_disposisi_keluar.php',
+    'edit_disposisi.php' => $base_dir . '/public/disposisi/edit_disposisi.php',
+    'edit_disposisi_keluar.php' => $base_dir . '/public/disposisi/edit_disposisi_keluar.php',
+];
+
+foreach ($form_files as $name => $path) {
+    $code = file_get_contents($path);
+    assert(strpos($code, 'name="kategori_id"') !== false, "$name must contain select element named kategori_id");
+    assert(strpos($code, 'SELECT id_kategori, kode_kategori, nama_kategori FROM kategori_surat') !== false, "$name must fetch categories from kategori_surat table");
+}
+
+// Test dual-key lookup behavior:
+$test_id = 1;
+$stmt_test = $pdo->prepare("SELECT id_kategori, kode_kategori FROM kategori_surat WHERE id_kategori = :id_kat OR kode_kategori = :kode LIMIT 1");
+$stmt_test->execute([':id_kat' => (int)$test_id, ':kode' => (string)$test_id]);
+$row_test = $stmt_test->fetch(PDO::FETCH_ASSOC);
+assert($row_test !== false && (int)$row_test['id_kategori'] === 1 && $row_test['kode_kategori'] === '001', "Lookup with ID 1 must resolve to kode 001");
+
+$test_legacy_kode = '002';
+$stmt_test->execute([':id_kat' => (int)$test_legacy_kode, ':kode' => (string)$test_legacy_kode]);
+$row_test_legacy = $stmt_test->fetch(PDO::FETCH_ASSOC);
+assert($row_test_legacy !== false && (int)$row_test_legacy['id_kategori'] === 2 && $row_test_legacy['kode_kategori'] === '002', "Lookup with legacy kode 002 must resolve to id 2");
+
+echo "PASS: Guided category dropdown and dual-key synchronization verified.\n";
+
+echo "ALL DISPOSISI TESTS (CATEGORY, EXPORT SEARCH, AUTO RENUMBER, ROLE HARMONIZATION, DYNAMIC FILE URL, GUIDED DROPDOWN) PASSED (100%)\n";
