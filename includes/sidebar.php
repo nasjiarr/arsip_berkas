@@ -27,14 +27,17 @@ $is_active_berkas_dropdown = ($is_active_sk || $is_active_sop || ($user_role !==
 <!-- Sidebar -->
 <div class="sidebar p-3 d-flex flex-column justify-content-between" id="sidebar">
     <div>
-        <div class="d-flex align-items-center mb-3">
-            <div class="brand-icon-box me-2">
-                <i class="bi bi-bank fs-4"></i>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center">
+                <div class="brand-icon-box me-2">
+                    <i class="bi bi-bank fs-4"></i>
+                </div>
+                <div>
+                    <h5 class="mb-0 brand-title" style="font-size: 0.95rem; line-height: 1.2;">Sistem Informasi</h5>
+                    <small class="brand-subtitle" style="font-size: 0.72rem;">Bank Kulon Progo</small>
+                </div>
             </div>
-            <div>
-                <h5 class="mb-0 brand-title" style="font-size: 0.95rem; line-height: 1.2;">Sistem Informasi</h5>
-                <small class="brand-subtitle" style="font-size: 0.72rem;">Bank Kulon Progo</small>
-            </div>
+            <button type="button" class="btn-close d-md-none sidebar-close-btn" id="sidebarCloseBtn" aria-label="Tutup"></button>
         </div>
 
         <div class="px-2 py-1 mb-3 user-badge rounded small d-flex align-items-center justify-content-between">
@@ -161,26 +164,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
 
     if (sidebar && sidebarToggle && sidebarBackdrop) {
-        function toggleSidebar() {
-            sidebar.classList.toggle('show');
-            sidebarBackdrop.classList.toggle('show');
-            if (window.innerWidth <= 768) {
-                sidebarToggle.style.display = sidebar.classList.contains('show') ? 'none' : 'block';
-            }
+        function openSidebar() {
+            sidebar.classList.add('show');
+            sidebarBackdrop.classList.add('show');
+            document.body.style.overflow = 'hidden';
         }
 
-        sidebarToggle.addEventListener('click', toggleSidebar);
-        sidebarBackdrop.addEventListener('click', toggleSidebar);
+        function closeSidebar() {
+            sidebar.classList.remove('show');
+            sidebarBackdrop.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        sidebarToggle.addEventListener('click', openSidebar);
+        sidebarBackdrop.addEventListener('click', closeSidebar);
+        if (sidebarCloseBtn) {
+            sidebarCloseBtn.addEventListener('click', closeSidebar);
+        }
 
         window.addEventListener('resize', function() {
             if (window.innerWidth > 768) {
-                sidebar.classList.remove('show');
-                sidebarBackdrop.classList.remove('show');
-                sidebarToggle.style.display = 'block';
-            } else if (!sidebar.classList.contains('show')) {
-                sidebarToggle.style.display = 'block';
+                closeSidebar();
             }
         });
     }

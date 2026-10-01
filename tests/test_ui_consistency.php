@@ -45,6 +45,15 @@ assert(strpos($css_content, 'Inter') !== false, 'style.css must configure modern
 assert(strpos($css_content, '.table-disposisi') !== false, 'style.css must have .table-disposisi styles');
 assert(strpos($css_content, '--brand-primary') !== false, 'style.css must define brand palette variables');
 assert(strpos($css_content, '--slate-900') !== false, 'style.css must define slate palette variables');
+assert(strpos($css_content, '.sidebar-close-btn') !== false, 'style.css must define .sidebar-close-btn');
+assert(strpos($css_content, 'padding-top: 3.85rem') !== false, 'style.css must provide mobile clearance for navbar-toggle');
 echo "PASS: Typography, corporate palette variables and table styling present in style.css.\n";
+
+// 5. Test sidebar drawer components
+$sidebar_content = file_get_contents($sidebar_path);
+assert(strpos($sidebar_content, 'id="sidebarCloseBtn"') !== false, 'sidebar.php must contain sidebarCloseBtn');
+assert(strpos($sidebar_content, 'id="sidebarToggle"') !== false, 'sidebar.php must contain sidebarToggle');
+assert(strpos($sidebar_content, 'id="sidebarBackdrop"') !== false, 'sidebar.php must contain sidebarBackdrop');
+echo "PASS: Sidebar mobile drawer and close button components verified.\n";
 
 echo "ALL UI CONSISTENCY TESTS PASSED (100%)\n";
