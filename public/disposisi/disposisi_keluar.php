@@ -131,152 +131,123 @@ function getNamaBulan($bulan)
                 </div>
                 <div class="container-fluid ">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h1 class="h2">Disposisi Surat Keluar</h1>
+                        <h1 class="h2 mb-0">Disposisi Surat Keluar</h1>
                         <div class="d-flex gap-2">
                             <?php if ($role === 'sekre' || $role === 'ti_admin'): ?>
                                 <a href="export_excel_keluar.php<?= !empty($_GET) ? '?' . http_build_query($_GET) : '' ?>" class="btn btn-success">
-                                    <i class="fas fa-file-excel me-1"></i> Export Excel
+                                    <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
                                 </a>
 
                                 <a href="add_disposisi_keluar.php" class="btn btn-primary">
-                                    <i class="fas fa-plus me-1"></i> Tambah Data
+                                    <i class="bi bi-plus-lg me-1"></i> Tambah Data
                                 </a>
                             <?php endif; ?>
                         </div>
                     </div>
 
-
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body">
-                            <div class="row mb-3 align-items-end">
-                                <div class="col-md-4">
-                                    <form method="get" class="d-flex align-items-center">
-                                        <label for="rows" class="me-2">Tampilkan:</label>
-                                        <select name="rows" id="rows" class="form-select w-auto" onchange="this.form.submit()">
-                                            <option value="10" <?= $rows_per_page == 10 ? 'selected' : '' ?>>10</option>
-                                            <option value="50" <?= $rows_per_page == 50 ? 'selected' : '' ?>>50</option>
-                                            <option value="100" <?= $rows_per_page == 100 ? 'selected' : '' ?>>100</option>
-                                            <option value="250" <?= $rows_per_page == 250 ? 'selected' : '' ?>>250</option>
-                                            <option value="500" <?= $rows_per_page == 500 ? 'selected' : '' ?>>500</option>
-                                            <option value="1000" <?= $rows_per_page == 1000 ? 'selected' : '' ?>>1000</option>
-                                        </select>
-                                        <span class="ms-2">baris</span>
-                                    </form>
-                                </div>
-                                <div class="col-md-6">
-                                    <form method="get" id="filterForm" class="d-flex flex-wrap align-items-end gap-2">
-                                        <!-- Hidden input untuk mempertahankan filter lain -->
-                                        <input type="hidden" name="rows" value="<?= isset($_GET['rows']) ? $_GET['rows'] : 10 ?>">
-                                        <input type="hidden" name="page" value="<?= isset($_GET['page']) ? $_GET['page'] : 1 ?>">
-
-                                        <div class="flex-grow-1">
-                                            <label for="bulan" class="form-label">Bulan:</label>
-                                            <select name="bulan" id="bulan" class="form-select w-100" onchange="document.getElementById('filterForm').submit();">
-                                                <option value="">Semua Bulan</option>
-                                                <?php
-                                                $bulan_list = [
-                                                    '01' => 'Januari',
-                                                    '02' => 'Februari',
-                                                    '03' => 'Maret',
-                                                    '04' => 'April',
-                                                    '05' => 'Mei',
-                                                    '06' => 'Juni',
-                                                    '07' => 'Juli',
-                                                    '08' => 'Agustus',
-                                                    '09' => 'September',
-                                                    '10' => 'Oktober',
-                                                    '11' => 'November',
-                                                    '12' => 'Desember'
-                                                ];
-                                                $selected_bulan = isset($_GET['bulan']) ? $_GET['bulan'] : '';
-
-                                                foreach ($bulan_list as $value => $nama) {
-                                                    $selected = ($selected_bulan == $value) ? 'selected' : '';
-                                                    echo "<option value='{$value}' {$selected}>{$nama}</option>";
-                                                }
-                                                ?>
-                                            </select>
-                                        </div>
-
-                                        <div class="flex-grow-1">
-                                            <label for="tahun" class="form-label">Tahun:</label>
-                                            <select name="tahun" id="tahun" class="form-select w-100" onchange="document.getElementById('filterForm').submit();">
-                                                <?php
-                                                $current_year = date('Y');
-                                                $year_query = "SELECT DISTINCT YEAR(tanggal) as year FROM disposisi_keluar ORDER BY year DESC";
-                                                $years = $pdo->query($year_query)->fetchAll(PDO::FETCH_COLUMN);
-                                                if (empty($years)) {
-                                                    $years = [$current_year];
-                                                }
-
-                                                $selected_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : $current_year;
-                                                foreach ($years as $year) {
-                                                    echo "<option value='{$year}' " . ($selected_tahun == $year ? 'selected' : '') . ">{$year}</option>";
-                                                }
-                                                ?>
-                                            </select>
-                                        </div>
-
-                                        <div class="flex-grow-1">
-                                            <label for="kategori" class="form-label">Kategori Surat:</label>
-                                            <select name="kategori" id="kategori" class="form-select w-100" onchange="document.getElementById('filterForm').submit();">
-                                                <option value="">Semua Kategori</option>
-                                                <option value="BI" <?= $selected_kategori == 'BI' ? 'selected' : '' ?>>Surat Keluar BI</option>
-                                                <option value="OJK" <?= $selected_kategori == 'OJK' ? 'selected' : '' ?>>Surat Keluar OJK</option>
-                                                <option value="UMUM" <?= $selected_kategori == 'UMUM' ? 'selected' : '' ?>>Surat Keluar Umum</option>
-                                            </select>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-end">
-                                                <?php if (!empty($selected_bulan) || !empty($selected_kategori) || !empty($search_query)): ?>
-                                                    <a href="?tahun=<?= $selected_tahun ?>" class="btn btn-outline-secondary">
-                                                        <i class="fas fa-times me-1"></i>
-                                                        Reset Filter
-                                                    </a>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    </form>
-
-                                </div>
-
-                            </div>
-
-                            <form method="get" class="d-flex gap-2 mt-3" id="searchForm">
-                                <!-- Hidden inputs untuk mempertahankan filter lain -->
-                                <input type="hidden" name="rows" value="<?= isset($_GET['rows']) ? $_GET['rows'] : 10 ?>">
+                    <!-- Unified Filter & Search Toolbar -->
+                    <div class="card shadow-sm mb-4 border-0">
+                        <div class="card-body p-3">
+                            <form method="get" id="filterForm" class="row g-2 align-items-center">
                                 <input type="hidden" name="page" value="1">
-                                <input type="hidden" name="bulan" value="<?= $selected_bulan ?>">
-                                <input type="hidden" name="tahun" value="<?= $selected_tahun ?>">
-                                <input type="hidden" name="kategori" value="<?= $selected_kategori ?>">
 
-                                <div class="input-group">
-                                    <input type="text"
-                                        class="form-control"
-                                        placeholder="Cari surat..."
-                                        name="search"
-                                        value="<?= htmlspecialchars($search_query) ?>"
-                                        aria-label="Search">
-                                    <button class="btn btn-primary" type="submit">
-                                        <i class="fas fa-search"></i>
+                                <!-- Pencarian -->
+                                <div class="col-12 col-md-4 col-lg-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                                        <input type="text"
+                                            class="form-control border-start-0 ps-0"
+                                            placeholder="Cari surat..."
+                                            name="search"
+                                            value="<?= htmlspecialchars($search_query) ?>"
+                                            aria-label="Cari surat">
+                                        <?php if (!empty($search_query)): ?>
+                                            <a href="<?= '?' . http_build_query(array_diff_key($_GET, ['search' => '', 'page' => ''])) ?>"
+                                                class="btn btn-outline-secondary border-start-0" title="Hapus pencarian">
+                                                <i class="bi bi-x-lg"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <!-- Filter Kategori -->
+                                <div class="col-6 col-md-3 col-lg-2">
+                                    <select name="kategori" id="kategori" class="form-select" onchange="document.getElementById('filterForm').submit();">
+                                        <option value="">Semua Kategori</option>
+                                        <option value="BI" <?= $selected_kategori == 'BI' ? 'selected' : '' ?>>Surat BI</option>
+                                        <option value="OJK" <?= $selected_kategori == 'OJK' ? 'selected' : '' ?>>Surat OJK</option>
+                                        <option value="UMUM" <?= $selected_kategori == 'UMUM' ? 'selected' : '' ?>>Surat Umum</option>
+                                    </select>
+                                </div>
+
+                                <!-- Filter Bulan -->
+                                <div class="col-6 col-md-3 col-lg-2">
+                                    <select name="bulan" id="bulan" class="form-select" onchange="document.getElementById('filterForm').submit();">
+                                        <option value="">Semua Bulan</option>
+                                        <?php
+                                        foreach ($bulan_list as $value => $nama) {
+                                            $selected = ($selected_bulan == $value) ? 'selected' : '';
+                                            echo "<option value='{$value}' {$selected}>{$nama}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                                <!-- Filter Tahun -->
+                                <div class="col-6 col-md-2 col-lg-2">
+                                    <select name="tahun" id="tahun" class="form-select" onchange="document.getElementById('filterForm').submit();">
+                                        <?php
+                                        $current_year = date('Y');
+                                        $year_query = "SELECT DISTINCT YEAR(tanggal) as year FROM disposisi_keluar ORDER BY year DESC";
+                                        $years = $pdo->query($year_query)->fetchAll(PDO::FETCH_COLUMN);
+                                        if (empty($years)) {
+                                            $years = [$current_year];
+                                        }
+
+                                        $selected_tahun = isset($_GET['tahun']) ? $_GET['tahun'] : $current_year;
+                                        foreach ($years as $year) {
+                                            echo "<option value='{$year}' " . ($selected_tahun == $year ? 'selected' : '') . ">{$year}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                                <!-- Limit Baris -->
+                                <div class="col-6 col-md-2 col-lg-1">
+                                    <select name="rows" id="rows" class="form-select" onchange="document.getElementById('filterForm').submit();" title="Jumlah baris per halaman">
+                                        <option value="10" <?= $rows_per_page == 10 ? 'selected' : '' ?>>10</option>
+                                        <option value="25" <?= $rows_per_page == 25 ? 'selected' : '' ?>>25</option>
+                                        <option value="50" <?= $rows_per_page == 50 ? 'selected' : '' ?>>50</option>
+                                        <option value="100" <?= $rows_per_page == 100 ? 'selected' : '' ?>>100</option>
+                                    </select>
+                                </div>
+
+                                <!-- Tombol Aksi: Cari / Reset -->
+                                <div class="col-12 col-lg-2 d-flex gap-1 justify-content-lg-end">
+                                    <button class="btn btn-primary" type="submit" title="Cari / Filter">
+                                        <i class="bi bi-funnel me-1"></i>Filter
                                     </button>
-                                    <?php if (!empty($search_query)): ?>
-                                        <a href="<?= '?' . http_build_query(array_diff_key($_GET, ['search' => ''])) ?>"
-                                            class="btn btn-outline-secondary">
-                                            <i class="fas fa-times"></i>
+                                    <?php if (!empty($selected_bulan) || !empty($selected_kategori) || !empty($search_query) || ($rows_per_page != 10)): ?>
+                                        <a href="?tahun=<?= $selected_tahun ?>" class="btn btn-outline-secondary" title="Reset filter">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
                                         </a>
                                     <?php endif; ?>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
                             <!-- Tampilkan info pencarian jika ada -->
                             <?php if (!empty($search_query)): ?>
-                                <div class="alert alert-info mt-3">
-                                    Menampilkan hasil pencarian untuk: "<?= htmlspecialchars($search_query) ?>"
-                                    <?php if ($total_rows > 0): ?>
-                                        (<?= $total_rows ?> hasil ditemukan)
-                                    <?php else: ?>
-                                        (Tidak ada hasil ditemukan)
-                                    <?php endif; ?>
+                                <div class="alert alert-info py-2 px-3 small d-flex justify-content-between align-items-center mb-3">
+                                    <span>
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Menampilkan hasil pencarian untuk: <strong>"<?= htmlspecialchars($search_query) ?>"</strong>
+                                        (<?= (int)$total_rows ?> hasil ditemukan)
+                                    </span>
+                                    <a href="<?= '?' . http_build_query(array_diff_key($_GET, ['search' => ''])) ?>" class="btn-close btn-sm" aria-label="Clear search"></a>
                                 </div>
                             <?php endif; ?>
 
@@ -285,12 +256,11 @@ function getNamaBulan($bulan)
                                     <thead>
                                         <tr>
                                             <th class="text-center" style="width: 45px;">No</th>
-                                            <th class="text-center" style="width: 65px;">Kode</th>
-                                            <th class="text-center" style="width: 80px;">Kategori</th>
-                                            <th class="text-center" style="width: 100px;">Tanggal</th>
+                                            <th class="text-center" style="width: 95px;">Kategori</th>
+                                            <th class="text-center" style="width: 105px;">Tanggal</th>
                                             <th class="text-center" style="width: 130px;">Nomor Surat</th>
                                             <th>Perihal</th>
-                                            <th style="width: 140px;">Tujuan (Ke)</th>
+                                            <th style="width: 150px;">Tujuan (Ke)</th>
                                             <th class="text-center" style="width: 75px;">Berkas</th>
                                             <?php if ($role === 'sekre' || $role === 'ti_admin'): ?>
                                                 <th class="text-center" style="width: 100px;">Aksi</th>
@@ -318,9 +288,11 @@ function getNamaBulan($bulan)
                                         ?>
                                             <tr>
                                                 <td class="text-center text-muted fw-semibold"><?= $nomor++ ?></td>
-                                                <td class="text-center font-monospace"><span class="badge bg-light text-dark border"><?= htmlspecialchars($row['kode'] ?? '-') ?></span></td>
-                                                <td class="text-center"><?= $kategori_badge ?></td>
-                                                <td class="text-center cell-date"><?= $tgl_fmt ?></td>
+                                                <td class="text-center">
+                                                    <?= $kategori_badge ?>
+                                                    <div class="mt-1"><span class="badge bg-light text-muted border font-monospace" style="font-size: 0.7rem;"><?= htmlspecialchars($row['kode'] ?? '-') ?></span></div>
+                                                </td>
+                                                <td class="text-center cell-date fw-semibold small"><?= $tgl_fmt ?></td>
                                                 <td class="text-center font-monospace fw-medium"><?= htmlspecialchars($row['nomor_surat'] ?? '-') ?></td>
                                                 <td><span class="cell-truncate" data-bs-toggle="tooltip" title="<?= htmlspecialchars($row['perihal'] ?? '') ?>"><?= htmlspecialchars($row['perihal'] ?? '-') ?></span></td>
                                                 <td><span class="cell-truncate-sm" data-bs-toggle="tooltip" title="<?= htmlspecialchars($row['ke'] ?? '') ?>"><?= htmlspecialchars($row['ke'] ?? '-') ?></span></td>
@@ -358,13 +330,9 @@ function getNamaBulan($bulan)
                                                             <a href="edit_disposisi_keluar.php?id=<?= htmlspecialchars($row['id'] ?? '') ?>" class="btn btn-outline-warning" title="Edit">
                                                                 <i class="bi bi-pencil"></i>
                                                             </a>
-                                                            <form method="POST" action="delete_disposisi_keluar.php" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                                                                <input type="hidden" name="id" value="<?= htmlspecialchars($row['id'] ?? '') ?>">
-                                                                <button type="submit" class="btn btn-outline-danger" title="Hapus" style="border-top-left-radius:0;border-bottom-left-radius:0;">
-                                                                    <i class="bi bi-trash"></i>
-                                                                </button>
-                                                            </form>
+                                                            <button type="button" class="btn btn-outline-danger" title="Hapus" onclick="confirmDelete(<?= (int)$row['id'] ?>, '<?= htmlspecialchars($row['nomor_surat'] ?? '-', ENT_QUOTES) ?>')">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 <?php endif; ?>
@@ -372,6 +340,34 @@ function getNamaBulan($bulan)
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
+                            </div>
+
+                            <!-- Modal Konfirmasi Hapus -->
+                            <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content shadow border-0">
+                                        <div class="modal-header bg-danger text-white py-2">
+                                            <h5 class="modal-title fs-6"><i class="bi bi-exclamation-triangle-fill me-2"></i>Konfirmasi Hapus</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4 text-center">
+                                            <i class="bi bi-trash text-danger display-4 mb-3 d-block"></i>
+                                            <p class="mb-1">Apakah Anda yakin ingin menghapus data disposisi keluar ini?</p>
+                                            <div class="alert alert-light border font-monospace fw-bold small text-break my-2" id="deleteTargetNumber">-</div>
+                                            <small class="text-muted">Tindakan ini tidak dapat dibatalkan dan nomor agenda akan dirapikan otomatis.</small>
+                                        </div>
+                                        <div class="modal-footer py-2 bg-light">
+                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                            <form method="POST" action="delete_disposisi_keluar.php" id="deleteForm">
+                                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                                <input type="hidden" name="id" id="deleteTargetId" value="">
+                                                <button type="submit" class="btn btn-sm btn-danger px-3">
+                                                    <i class="bi bi-trash me-1"></i>Hapus Permanen
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Modal Preview PDF (Placed outside table to prevent DOM duplication) -->
@@ -538,15 +534,15 @@ function getNamaBulan($bulan)
                     </div>
                     <div class="zoom-controls py-3 bg-white border-top">
                         <div class="btn-group">
-                            <button class="btn btn-outline-primary" onclick="zoomOut()">
-                                <i class="fas fa-minus"></i>
+                            <button class="btn btn-outline-primary" onclick="zoomOut()" title="Perkecil">
+                                <i class="bi bi-zoom-out"></i>
                             </button>
                             <button class="btn btn-outline-primary" disabled id="zoomLevel">100%</button>
-                            <button class="btn btn-outline-primary" onclick="zoomIn()">
-                                <i class="fas fa-plus"></i>
+                            <button class="btn btn-outline-primary" onclick="zoomIn()" title="Perbesar">
+                                <i class="bi bi-zoom-in"></i>
                             </button>
-                            <button class="btn btn-outline-secondary" onclick="resetZoom()">
-                                <i class="fas fa-undo"></i> Reset
+                            <button class="btn btn-outline-secondary" onclick="resetZoom()" title="Reset Ukuran">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
                             </button>
                         </div>
                     </div>
@@ -555,6 +551,14 @@ function getNamaBulan($bulan)
         </div>
     </div>
     <script>
+        // Modal Konfirmasi Hapus
+        function confirmDelete(id, nomorSurat) {
+            document.getElementById('deleteTargetId').value = id;
+            document.getElementById('deleteTargetNumber').textContent = nomorSurat;
+            const delModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            delModal.show();
+        }
+
         // Initialize variables
         let currentScale = 1;
         const imagePreviewModal = document.getElementById('imagePreviewModal');

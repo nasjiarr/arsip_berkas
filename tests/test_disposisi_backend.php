@@ -174,4 +174,57 @@ assert($row_test_legacy !== false && (int)$row_test_legacy['id_kategori'] === 2 
 
 echo "PASS: Guided category dropdown and dual-key synchronization verified.\n";
 
-echo "ALL DISPOSISI TESTS (CATEGORY, EXPORT SEARCH, AUTO RENUMBER, ROLE HARMONIZATION, DYNAMIC FILE URL, GUIDED DROPDOWN) PASSED (100%)\n";
+// 13. Test Unified Filter & Search Toolbar
+$disp_code_curr = file_get_contents($base_dir . '/public/disposisi/disposisi.php');
+$disp_k_code_curr = file_get_contents($base_dir . '/public/disposisi/disposisi_keluar.php');
+
+assert(strpos($disp_code_curr, 'id="searchForm"') === false, 'disposisi.php must eliminate fragmented searchForm');
+assert(strpos($disp_k_code_curr, 'id="searchForm"') === false, 'disposisi_keluar.php must eliminate fragmented searchForm');
+assert(strpos($disp_code_curr, '<form method="get" id="filterForm"') !== false, 'disposisi.php must feature unified filterForm');
+assert(strpos($disp_k_code_curr, '<form method="get" id="filterForm"') !== false, 'disposisi_keluar.php must feature unified filterForm');
+echo "PASS: Unified filter & search toolbar verified for both disposisi views.\n";
+
+// 14. Test Streamlined Table Columns
+assert(strpos($disp_code_curr, '<th class="text-center" style="width: 65px;">Kode</th>') === false, 'disposisi.php must eliminate redundant Kode column header');
+assert(strpos($disp_k_code_curr, '<th class="text-center" style="width: 65px;">Kode</th>') === false, 'disposisi_keluar.php must eliminate redundant Kode column header');
+assert(strpos($disp_code_curr, 'Surat: <?= $tgl_surat_fmt ?>') !== false, 'disposisi.php must combine dates into streamlined column');
+
+$style_css = file_get_contents($base_dir . '/public/assets/style.css');
+assert(strpos($style_css, 'max-width: 260px;') !== false, 'style.css must allow wider truncate max-width for perihal');
+echo "PASS: Streamlined table column layout verified.\n";
+
+// 15. Test Icon Consistency (100% Bootstrap Icons, No Font Awesome)
+$disp_code_icons = file_get_contents($base_dir . '/public/disposisi/disposisi.php');
+$disp_k_code_icons = file_get_contents($base_dir . '/public/disposisi/disposisi_keluar.php');
+
+assert(preg_match('/class=["\'][^"\']*\bfa[srb]?\b/', $disp_code_icons) === 0, 'disposisi.php must not contain Font Awesome icon classes');
+assert(preg_match('/class=["\'][^"\']*\bfa[srb]?\b/', $disp_k_code_icons) === 0, 'disposisi_keluar.php must not contain Font Awesome icon classes');
+assert(strpos($disp_code_icons, 'bi-zoom-out') !== false, 'disposisi.php must use Bootstrap Icon for zoom out');
+assert(strpos($disp_k_code_icons, 'bi-zoom-out') !== false, 'disposisi_keluar.php must use Bootstrap Icon for zoom out');
+echo "PASS: Icon consistency standardized 100% on Bootstrap Icons.\n";
+
+// 16. Test Modern Delete Modal Dialog
+assert(strpos($disp_code_curr, 'id="deleteConfirmModal"') !== false, 'disposisi.php must feature deleteConfirmModal');
+assert(strpos($disp_k_code_curr, 'id="deleteConfirmModal"') !== false, 'disposisi_keluar.php must feature deleteConfirmModal');
+assert(strpos($disp_code_curr, 'onclick="confirmDelete(') !== false, 'disposisi.php must trigger confirmDelete function');
+assert(strpos($disp_k_code_curr, 'onclick="confirmDelete(') !== false, 'disposisi_keluar.php must trigger confirmDelete function');
+assert(strpos($disp_code_curr, 'onsubmit="return confirm(') === false, 'disposisi.php must eliminate native window.confirm');
+assert(strpos($disp_k_code_curr, 'onsubmit="return confirm(') === false, 'disposisi_keluar.php must eliminate native window.confirm');
+echo "PASS: Modern delete confirmation modal dialog verified.\n";
+
+// 17. Test Corporate Slate Form Redesign (Add & Edit)
+$add_disp = file_get_contents($base_dir . '/public/disposisi/add_disposisi.php');
+$edit_disp = file_get_contents($base_dir . '/public/disposisi/edit_disposisi.php');
+$add_k = file_get_contents($base_dir . '/public/disposisi/add_disposisi_keluar.php');
+$edit_k = file_get_contents($base_dir . '/public/disposisi/edit_disposisi_keluar.php');
+
+assert(strpos($add_disp, 'card-header bg-white border-bottom') !== false, 'add_disposisi.php must use Corporate Slate white card header');
+assert(strpos($edit_disp, 'card-header bg-white border-bottom') !== false, 'edit_disposisi.php must use Corporate Slate white card header');
+assert(strpos($add_k, 'card-header bg-white border-bottom') !== false, 'add_disposisi_keluar.php must use Corporate Slate white card header');
+assert(strpos($edit_k, 'card-header bg-white border-bottom') !== false, 'edit_disposisi_keluar.php must use Corporate Slate white card header');
+
+assert(strpos($add_disp, 'bg-primary text-white') === false, 'add_disposisi.php must remove solid bg-primary card header');
+assert(strpos($edit_disp, 'bg-warning text-dark') === false, 'edit_disposisi.php must remove solid bg-warning card header');
+echo "PASS: Corporate Slate form redesign (add & edit) verified.\n";
+
+echo "ALL DISPOSISI TESTS (CATEGORY, EXPORT SEARCH, AUTO RENUMBER, ROLE HARMONIZATION, DYNAMIC FILE URL, GUIDED DROPDOWN, UNIFIED TOOLBAR, STREAMLINED TABLE, ICON CONSISTENCY, DELETE MODAL, SLATE FORMS) PASSED (100%)\n";

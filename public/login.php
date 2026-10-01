@@ -139,6 +139,13 @@ $logout_message = isset($_GET['logout']) ? "Anda telah berhasil logout." : null;
             color: #94a3b8;
         }
 
+        .form-floating > .form-control::placeholder,
+        .form-floating > .form-control:focus::placeholder,
+        [data-bs-theme="dark"] .form-floating > .form-control::placeholder,
+        [data-bs-theme="dark"] .form-floating > .form-control:focus::placeholder {
+            color: transparent !important;
+        }
+
         .form-signin input.form-control {
             height: 50px;
             border-radius: 10px;

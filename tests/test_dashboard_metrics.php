@@ -12,6 +12,7 @@ assert(strpos($dashboard_content, 'Total Pengguna') !== false, 'dashboard.php mu
 assert(strpos($dashboard_content, 'Disposisi Surat') !== false, 'dashboard.php must contain Disposisi Surat stat card');
 assert(strpos($dashboard_content, 'Total Berkas SK') !== false, 'dashboard.php must contain Total Berkas SK stat card');
 assert(strpos($dashboard_content, 'Total Berkas SOP') !== false, 'dashboard.php must contain Total Berkas SOP stat card');
+assert(strpos($dashboard_content, "if (\$role === 'ti_admin')") !== false, 'dashboard.php must guard stat cards for ti_admin only');
 echo "PASS: dashboard.php markup and stat card presence verified.\n";
 
 // 2. Verify style.css stat-card and tabs definitions

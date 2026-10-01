@@ -171,23 +171,32 @@ $categories = $pdo->query("SELECT id_kategori, kode_kategori, nama_kategori FROM
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">
-                                <i class="bi bi-plus-lg me-2"></i>
-                                Tambah Data Disposisi Keluar
-                            </h5>
+                <div class="card shadow-sm border-0 rounded-3">
+                    <div class="card-header bg-white border-bottom py-3 px-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 rounded-3 bg-primary-subtle text-primary">
+                                <i class="bi bi-file-earmark-plus fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0 fw-bold">Tambah Data Disposisi Keluar</h5>
+                                <small class="text-muted">Masukkan data surat keluar ke dalam buku agenda digital</small>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body p-4">
                         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                            <div class="row g-4">
-                                <!-- Kategori & Nomor Surat -->
+                            <div class="row g-3">
+                                <!-- Section 1: Informasi Surat Keluar -->
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center gap-2 text-primary fw-bold small text-uppercase pb-1 border-bottom">
+                                        <i class="bi bi-envelope-paper"></i> Informasi Surat Keluar
+                                    </div>
+                                </div>
+
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="kategori_id" class="form-label">Kategori Surat</label>
+                                        <label for="kategori_id" class="form-label fw-semibold">Kategori Surat</label>
                                         <select class="form-select" id="kategori_id" name="kategori_id" required>
                                             <option value="" disabled selected>-- Pilih Kategori Surat --</option>
                                             <?php foreach ($categories as $kat): ?>
@@ -203,48 +212,58 @@ $categories = $pdo->query("SELECT id_kategori, kode_kategori, nama_kategori FROM
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="nomor_surat" class="form-label">Nomor Surat</label>
-                                        <input type="text" class="form-control" id="nomor_surat" name="nomor_surat" required>
+                                        <label for="nomor_surat" class="form-label fw-semibold">Nomor Surat</label>
+                                        <input type="text" class="form-control" id="nomor_surat" name="nomor_surat" placeholder="Contoh: 012/DIR/2026" required>
                                         <div class="invalid-feedback">
                                             Harap isi nomor surat
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Tanggal -->
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="tanggal" class="form-label">Tanggal</label>
-                                        <input type="date" class="form-control" id="tanggal" name="tanggal" required>
+                                        <label for="tanggal" class="form-label fw-semibold">Tanggal Surat Keluar</label>
+                                        <input type="date" class="form-control" id="tanggal" name="tanggal" value="<?= date('Y-m-d') ?>" required>
                                         <div class="invalid-feedback">
                                             Harap pilih tanggal surat
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Perihal -->
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label for="perihal" class="form-label">Perihal</label>
-                                        <input type="text" class="form-control" id="perihal" name="perihal">
-                                    </div>
-                                </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="ke" class="form-label">Ke</label>
-                                        <input type="text" class="form-control" id="ke" name="ke">
+                                        <label for="ke" class="form-label fw-semibold">Tujuan Surat (Kepada)</label>
+                                        <input type="text" class="form-control" id="ke" name="ke" placeholder="Nama instansi / pihak tujuan">
                                     </div>
                                 </div>
 
-                                <!-- File Upload -->
+                                <!-- Section 2: Isi Surat -->
+                                <div class="col-12 mt-4">
+                                    <div class="d-flex align-items-center gap-2 text-primary fw-bold small text-uppercase pb-1 border-bottom">
+                                        <i class="bi bi-card-text"></i> Isi / Ringkasan Surat
+                                    </div>
+                                </div>
+
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label class="form-label">Upload File (PDF/Gambar)</label>
+                                        <label for="perihal" class="form-label fw-semibold">Perihal Surat</label>
+                                        <textarea class="form-control" id="perihal" name="perihal" rows="2" placeholder="Uraian ringkas maksud / hal surat keluar..."></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Section 3: Berkas Lampiran -->
+                                <div class="col-12 mt-4">
+                                    <div class="d-flex align-items-center gap-2 text-primary fw-bold small text-uppercase pb-1 border-bottom">
+                                        <i class="bi bi-paperclip"></i> Lampiran Berkas
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-group">
                                         <div class="file-upload">
                                             <label class="file-upload-label">
                                                 <i class="bi bi-cloud-arrow-up"></i>
-                                                <span class="d-block mt-2">Pilih file atau drag & drop disini</span>
-                                                <small class="text-muted d-block mt-1">Format yang didukung: PDF, JPG, JPEG, PNG (Maks. 10MB)</small>
+                                                <span class="d-block mt-2 fw-medium">Pilih file atau drag & drop disini</span>
+                                                <small class="text-muted d-block mt-1">Format didukung: PDF, JPG, JPEG, PNG (Maks. 10MB)</small>
                                                 <input type="file" id="file" name="file" accept=".pdf,.jpg,.jpeg,.png">
                                             </label>
                                         </div>
@@ -269,15 +288,13 @@ $categories = $pdo->query("SELECT id_kategori, kode_kategori, nama_kategori FROM
                                 </div>
                             </div>
 
-                            <!-- Buttons -->
-                            <div class="d-flex justify-content-end gap-2 mt-4">
-                                <a href="disposisi_keluar.php" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left me-1"></i>
-                                    Kembali
+                            <!-- Action Buttons -->
+                            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                                <a href="disposisi_keluar.php" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar
                                 </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-floppy me-1"></i>
-                                    Simpan Data
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="bi bi-check-lg me-1"></i> Simpan Disposisi Keluar
                                 </button>
                             </div>
                         </form>

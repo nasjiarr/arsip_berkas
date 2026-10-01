@@ -62,7 +62,7 @@ $can_manage = in_array($user_role, ['admin_dok', 'ti_admin']);
                                         <input
                                             type="text"
                                             id="searchInputSK"
-                                            class="form-control border-start-0 border-end-0 ps-0"
+                                            class="form-control border-start-0 ps-0"
                                             placeholder="Cari nomor SK, perihal, atau kata kunci..."
                                             autocomplete="off">
                                         <button class="btn btn-outline-secondary border-start-0 text-muted d-none" type="button" id="clearSearchBtn" title="Hapus pencarian">
@@ -76,8 +76,8 @@ $can_manage = in_array($user_role, ['admin_dok', 'ti_admin']);
                             <!-- Year Filter -->
                             <div class="col-6 col-md-3 col-lg-3">
                                 <div class="input-group">
-                                    <span class="input-group-text bg-transparent text-muted small"><i class="bi bi-calendar3"></i></span>
-                                    <select class="form-select form-select-sm" id="yearFilter">
+                                    <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-calendar3"></i></span>
+                                    <select class="form-select border-start-0" id="yearFilter">
                                         <option value="">Semua Tahun</option>
                                     </select>
                                 </div>
@@ -85,7 +85,7 @@ $can_manage = in_array($user_role, ['admin_dok', 'ti_admin']);
 
                             <!-- Refresh Button -->
                             <div class="col-6 col-md-1 col-lg-2 text-end">
-                                <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="resetFilterBtn" title="Reset Filter">
+                                <button type="button" class="btn btn-outline-secondary w-100" id="resetFilterBtn" title="Reset Filter">
                                     <i class="bi bi-arrow-counterclockwise"></i> <span class="d-none d-lg-inline">Reset</span>
                                 </button>
                             </div>
@@ -98,7 +98,7 @@ $can_manage = in_array($user_role, ['admin_dok', 'ti_admin']);
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0" id="skTable" style="font-size: 0.9rem;">
-                                <thead class="table-light border-bottom">
+                                <thead class="border-bottom">
                                     <tr>
                                         <th class="ps-3 text-center" style="width: 55px;">No</th>
                                         <th style="min-width: 170px;">Nomor SK</th>

@@ -3,7 +3,7 @@ require_once '../includes/auth.php';
 require_once '../includes/functions.php';
 check_login();
 
-// ponytail: aggregate counts for dashboard metrics summary; add memcached or redis caching if table exceeds 100k rows.
+// ponytail: aggregate counts for dashboard metrics summary for ti_admin only; saves db queries for other roles.
 $stats = [
     'users' => 0,
     'disposisi' => 0,
@@ -13,29 +13,33 @@ $stats = [
     'sop' => 0
 ];
 
-try {
-    $stats['users'] = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-    $stats['disp_masuk'] = (int) $pdo->query("SELECT COUNT(*) FROM disposisi_surat")->fetchColumn();
-    $stats['disp_keluar'] = (int) $pdo->query("SELECT COUNT(*) FROM disposisi_keluar")->fetchColumn();
-    $stats['disposisi'] = $stats['disp_masuk'] + $stats['disp_keluar'];
-    $stats['sk'] = (int) $pdo->query("SELECT COUNT(*) FROM sk_table")->fetchColumn();
-    $stats['sop'] = (int) $pdo->query("SELECT COUNT(*) FROM sop_table")->fetchColumn();
-} catch (Exception $e) {
-    // Graceful fallback to default 0
+if ($role === 'ti_admin') {
+    try {
+        $stats['users'] = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+        $stats['disp_masuk'] = (int) $pdo->query("SELECT COUNT(*) FROM disposisi_surat")->fetchColumn();
+        $stats['disp_keluar'] = (int) $pdo->query("SELECT COUNT(*) FROM disposisi_keluar")->fetchColumn();
+        $stats['disposisi'] = $stats['disp_masuk'] + $stats['disp_keluar'];
+        $stats['sk'] = (int) $pdo->query("SELECT COUNT(*) FROM sk_table")->fetchColumn();
+        $stats['sop'] = (int) $pdo->query("SELECT COUNT(*) FROM sop_table")->fetchColumn();
+    } catch (Exception $e) {
+        // Graceful fallback to default 0
+    }
 }
 
-// ponytail: query latest 6 dispositions for activity log in tab 3; upgrade with paginated logs if needed.
+// ponytail: query latest 6 dispositions for activity log in tab 3 (ti_admin only); upgrade with paginated logs if needed.
 $recent_activities = [];
-try {
-    $stmt = $pdo->query("
-        (SELECT 'masuk' as tipe, id, kode, nomer_surat as nomor, dari as pihak, perihal, tanggal_masuk as tanggal FROM disposisi_surat)
-        UNION ALL
-        (SELECT 'keluar' as tipe, id, kode, nomor_surat as nomor, ke as pihak, perihal, tanggal FROM disposisi_keluar)
-        ORDER BY tanggal DESC, id DESC LIMIT 6
-    ");
-    $recent_activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    // Graceful fallback
+if ($role === 'ti_admin') {
+    try {
+        $stmt = $pdo->query("
+            (SELECT 'masuk' as tipe, id, kode, nomer_surat as nomor, dari as pihak, perihal, tanggal_masuk as tanggal FROM disposisi_surat)
+            UNION ALL
+            (SELECT 'keluar' as tipe, id, kode, nomor_surat as nomor, ke as pihak, perihal, tanggal FROM disposisi_keluar)
+            ORDER BY tanggal DESC, id DESC LIMIT 6
+        ");
+        $recent_activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        // Graceful fallback
+    }
 }
 
 // ponytail: dynamic role capability flags for adaptive dashboard UI
@@ -95,7 +99,8 @@ $default_tab_id = ($has_tab_kredit ? 'tab-kredit-tab' : 'tab-regulasi-tab');
                     </div>
                 </div>
 
-                <!-- Metrics Summary (Stat Cards) -->
+                <!-- Metrics Summary (Stat Cards) - Khusus Admin TI -->
+                <?php if ($role === 'ti_admin'): ?>
                 <div class="row g-3 mb-4">
                     <!-- Total Pengguna -->
                     <div class="col-sm-6 col-xl-3">
@@ -189,6 +194,7 @@ $default_tab_id = ($has_tab_kredit ? 'tab-kredit-tab' : 'tab-regulasi-tab');
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
 
                 <!-- Navigation Tabs (Tengah: Tabbed Utility) -->
                 <ul class="nav nav-tabs nav-tabs-custom mb-4" id="dashboardTab" role="tablist">
@@ -206,7 +212,7 @@ $default_tab_id = ($has_tab_kredit ? 'tab-kredit-tab' : 'tab-regulasi-tab');
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="tab-log-tab" data-bs-toggle="tab" data-bs-target="#tab-log" type="button" role="tab" aria-controls="tab-log" aria-selected="false">
-                            <i class="bi bi-speedometer2"></i> Log Sistem / Quick Access
+                            <i class="bi <?= ($role === 'ti_admin' ? 'bi-speedometer2' : 'bi-lightning-charge') ?>"></i> <?= ($role === 'ti_admin' ? 'Log Sistem / Quick Access' : 'Pintasan Akses Cepat') ?>
                         </button>
                     </li>
                 </ul>
@@ -649,6 +655,7 @@ $default_tab_id = ($has_tab_kredit ? 'tab-kredit-tab' : 'tab-regulasi-tab');
                             </div>
                         </div>
 
+                        <?php if ($role === 'ti_admin'): ?>
                         <div class="row g-4">
                             <!-- Aktivitas Terkini (Disposisi Terbaru) -->
                             <div class="col-lg-7">
@@ -739,6 +746,7 @@ $default_tab_id = ($has_tab_kredit ? 'tab-kredit-tab' : 'tab-regulasi-tab');
                                 </div>
                             </div>
                         </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 </div>

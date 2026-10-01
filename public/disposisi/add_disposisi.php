@@ -177,23 +177,32 @@ $categories = $pdo->query("SELECT id_kategori, kode_kategori, nama_kategori FROM
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">
-                                <i class="bi bi-plus-lg me-2"></i>
-                                Tambah Data Disposisi
-                            </h5>
+                <div class="card shadow-sm border-0 rounded-3">
+                    <div class="card-header bg-white border-bottom py-3 px-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 rounded-3 bg-primary-subtle text-primary">
+                                <i class="bi bi-file-earmark-plus fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0 fw-bold">Tambah Data Disposisi Masuk</h5>
+                                <small class="text-muted">Masukkan data surat masuk ke dalam buku agenda digital</small>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body p-4">
                         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                            <div class="row g-4">
-                                <!-- Kategori & Nomor Surat -->
+                            <div class="row g-3">
+                                <!-- Section 1: Informasi Surat -->
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center gap-2 text-primary fw-bold small text-uppercase pb-1 border-bottom">
+                                        <i class="bi bi-envelope-paper"></i> Informasi Surat
+                                    </div>
+                                </div>
+
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="kategori_id" class="form-label">Kategori Surat</label>
+                                        <label for="kategori_id" class="form-label fw-semibold">Kategori Surat</label>
                                         <select class="form-select" id="kategori_id" name="kategori_id" required>
                                             <option value="" disabled selected>-- Pilih Kategori Surat --</option>
                                             <?php foreach ($categories as $kat): ?>
@@ -209,18 +218,17 @@ $categories = $pdo->query("SELECT id_kategori, kode_kategori, nama_kategori FROM
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="nomer_surat" class="form-label">Nomor Surat</label>
-                                        <input type="text" class="form-control" id="nomer_surat" name="nomer_surat" required>
+                                        <label for="nomer_surat" class="form-label fw-semibold">Nomor Surat</label>
+                                        <input type="text" class="form-control" id="nomer_surat" name="nomer_surat" placeholder="Contoh: 005/KP/2026" required>
                                         <div class="invalid-feedback">
                                             Harap isi nomor surat
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Tanggal Surat & Tanggal Masuk -->
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="tanggal_surat" class="form-label">Tanggal Surat</label>
+                                        <label for="tanggal_surat" class="form-label fw-semibold">Tanggal Surat</label>
                                         <input type="date" class="form-control" id="tanggal_surat" name="tanggal_surat" required>
                                         <div class="invalid-feedback">
                                             Harap pilih tanggal surat
@@ -229,54 +237,64 @@ $categories = $pdo->query("SELECT id_kategori, kode_kategori, nama_kategori FROM
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="tanggal_masuk" class="form-label">Tanggal Masuk</label>
-                                        <input type="date" class="form-control" id="tanggal_masuk" name="tanggal_masuk" required>
+                                        <label for="tanggal_masuk" class="form-label fw-semibold">Tanggal Masuk</label>
+                                        <input type="date" class="form-control" id="tanggal_masuk" name="tanggal_masuk" value="<?= date('Y-m-d') ?>" required>
                                         <div class="invalid-feedback">
                                             Harap pilih tanggal masuk
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Dari & Diteruskan -->
-                                <div class="col-md-6">
+                                <div class="col-12">
                                     <div class="form-group">
-                                        <label for="dari" class="form-label">Dari</label>
-                                        <input type="text" class="form-control" id="dari" name="dari" required>
+                                        <label for="dari" class="form-label fw-semibold">Asal Surat (Dari)</label>
+                                        <input type="text" class="form-control" id="dari" name="dari" placeholder="Nama instansi / pengirim surat" required>
                                         <div class="invalid-feedback">
                                             Harap isi asal surat
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Perihal -->
-                                <div class="col-6">
+
+                                <!-- Section 2: Disposisi & Instruksi -->
+                                <div class="col-12 mt-4">
+                                    <div class="d-flex align-items-center gap-2 text-primary fw-bold small text-uppercase pb-1 border-bottom">
+                                        <i class="bi bi-card-text"></i> Disposisi & Instruksi
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
                                     <div class="form-group">
-                                        <label for="perihal" class="form-label">Perihal</label>
-                                        <input type="text" class="form-control" id="perihal" name="perihal">
+                                        <label for="perihal" class="form-label fw-semibold">Perihal Surat</label>
+                                        <textarea class="form-control" id="perihal" name="perihal" rows="2" placeholder="Uraian ringkas hal / perihal surat..."></textarea>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="diteruskan" class="form-label">Diteruskan Kepada</label>
-                                        <input type="text" class="form-control" id="diteruskan" name="diteruskan">
+                                        <label for="diteruskan" class="form-label fw-semibold">Diteruskan Kepada</label>
+                                        <input type="text" class="form-control" id="diteruskan" name="diteruskan" placeholder="Nama pejabat / divisi tujuan">
                                     </div>
                                 </div>
-                                <!-- Instruksi -->
-                                <div class="col-6">
+                                <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="instruksi" class="form-label">Instruksi</label>
-                                        <input type="text" class="form-control" id="instruksi" name="instruksi">
+                                        <label for="instruksi" class="form-label fw-semibold">Instruksi / Catatan</label>
+                                        <input type="text" class="form-control" id="instruksi" name="instruksi" placeholder="Tindakan yang perlu diambil">
                                     </div>
                                 </div>
 
-                                <!-- File Upload -->
+                                <!-- Section 3: Berkas Lampiran -->
+                                <div class="col-12 mt-4">
+                                    <div class="d-flex align-items-center gap-2 text-primary fw-bold small text-uppercase pb-1 border-bottom">
+                                        <i class="bi bi-paperclip"></i> Lampiran Berkas
+                                    </div>
+                                </div>
+
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label class="form-label">Upload File (PDF/Gambar)</label>
                                         <div class="file-upload">
                                             <label class="file-upload-label">
                                                 <i class="bi bi-cloud-arrow-up"></i>
-                                                <span class="d-block mt-2">Pilih file atau drag & drop disini</span>
-                                                <small class="text-muted d-block mt-1">Format yang didukung: PDF, JPG, JPEG, PNG (Maks. 10MB)</small>
+                                                <span class="d-block mt-2 fw-medium">Pilih file atau drag & drop disini</span>
+                                                <small class="text-muted d-block mt-1">Format didukung: PDF, JPG, JPEG, PNG (Maks. 10MB)</small>
                                                 <input type="file" id="file" name="file" accept=".pdf,.jpg,.jpeg,.png">
                                             </label>
                                         </div>
@@ -301,15 +319,13 @@ $categories = $pdo->query("SELECT id_kategori, kode_kategori, nama_kategori FROM
                                 </div>
                             </div>
 
-                            <!-- Buttons -->
-                            <div class="d-flex justify-content-end gap-2 mt-4">
-                                <a href="disposisi.php" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left me-1"></i>
-                                    Kembali
+                            <!-- Action Buttons -->
+                            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                                <a href="disposisi.php" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar
                                 </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-floppy me-1"></i>
-                                    Simpan Data
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="bi bi-check-lg me-1"></i> Simpan Disposisi
                                 </button>
                             </div>
                         </form>

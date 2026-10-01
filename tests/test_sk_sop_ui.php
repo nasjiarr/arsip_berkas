@@ -91,4 +91,15 @@ assert(strpos($view_sop_code, 'Content-Disposition') !== false, 'view_sop.php mu
 assert(strpos($view_sop_code, 'attachment') !== false, 'view_sop.php must support download attachment');
 echo "PASS: view_sk.php and view_sop.php download handling verified.\n";
 
+// 7. Verify Dark Theme Table and Toolbar Harmonization
+assert(strpos($sk_html, '<thead class="table-light') === false, 'cek_sk.php must eliminate light table header class');
+assert(strpos($sop_html, '<thead class="table-light') === false, 'cek_sop.php must eliminate light table header class');
+assert(strpos($sop_html, 'btn-outline-warning text-dark') === false, 'cek_sop.php must eliminate text-dark on outline warning button');
+
+$css_content = file_get_contents($base_dir . '/public/assets/style.css');
+assert(strpos($css_content, '[data-bs-theme="dark"] thead.table-light') !== false, 'style.css must support dark table-light');
+assert(strpos($css_content, '[data-bs-theme="dark"] .bg-body-tertiary') !== false, 'style.css must support dark table footer');
+assert(strpos($css_content, '[data-bs-theme="dark"] .bg-warning-subtle') !== false, 'style.css must support dark warning subtle badge');
+echo "PASS: Dark theme table and toolbar harmonization verified.\n";
+
 echo "ALL SK & SOP UI/UX TESTS PASSED (100%)\n";

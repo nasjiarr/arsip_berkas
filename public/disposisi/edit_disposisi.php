@@ -221,23 +221,32 @@ if ($current_kategori_id <= 0 && !empty($data['kode'])) {
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-warning text-dark py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">
-                                <i class="bi bi-pencil-square me-2"></i>
-                                Edit Data Disposisi
-                            </h5>
+                <div class="card shadow-sm border-0 rounded-3">
+                    <div class="card-header bg-white border-bottom py-3 px-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 rounded-3 bg-warning-subtle text-warning-emphasis">
+                                <i class="bi bi-pencil-square fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0 fw-bold">Edit Data Disposisi Masuk</h5>
+                                <small class="text-muted">Perbarui data agenda surat masuk nomor: <?= htmlspecialchars($data['nomer_surat'] ?? '') ?></small>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body p-4">
                         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                            <div class="row g-4">
-                                <!-- Kategori & Nomor Surat -->
+                            <div class="row g-3">
+                                <!-- Section 1: Informasi Surat -->
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center gap-2 text-primary fw-bold small text-uppercase pb-1 border-bottom">
+                                        <i class="bi bi-envelope-paper"></i> Informasi Surat
+                                    </div>
+                                </div>
+
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="kategori_id" class="form-label">Kategori Surat</label>
+                                        <label for="kategori_id" class="form-label fw-semibold">Kategori Surat</label>
                                         <select class="form-select" id="kategori_id" name="kategori_id" required>
                                             <option value="" disabled <?= empty($current_kategori_id) ? 'selected' : '' ?>>-- Pilih Kategori Surat --</option>
                                             <?php foreach ($categories as $kat): ?>
@@ -253,7 +262,7 @@ if ($current_kategori_id <= 0 && !empty($data['kode'])) {
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="nomer_surat" class="form-label">Nomor Surat</label>
+                                        <label for="nomer_surat" class="form-label fw-semibold">Nomor Surat</label>
                                         <input type="text" class="form-control" id="nomer_surat" name="nomer_surat"
                                             value="<?= htmlspecialchars($data['nomer_surat']) ?>" required>
                                         <div class="invalid-feedback">
@@ -262,10 +271,9 @@ if ($current_kategori_id <= 0 && !empty($data['kode'])) {
                                     </div>
                                 </div>
 
-                                <!-- Tanggal Surat & Tanggal Masuk -->
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="tanggal_surat" class="form-label">Tanggal Surat</label>
+                                        <label for="tanggal_surat" class="form-label fw-semibold">Tanggal Surat</label>
                                         <input type="date" class="form-control" id="tanggal_surat" name="tanggal_surat"
                                             value="<?= $data['tanggal_surat'] ?>" required>
                                         <div class="invalid-feedback">
@@ -275,7 +283,7 @@ if ($current_kategori_id <= 0 && !empty($data['kode'])) {
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="tanggal_masuk" class="form-label">Tanggal Masuk</label>
+                                        <label for="tanggal_masuk" class="form-label fw-semibold">Tanggal Masuk</label>
                                         <input type="date" class="form-control" id="tanggal_masuk" name="tanggal_masuk"
                                             value="<?= $data['tanggal_masuk'] ?>" required>
                                         <div class="invalid-feedback">
@@ -284,65 +292,80 @@ if ($current_kategori_id <= 0 && !empty($data['kode'])) {
                                     </div>
                                 </div>
 
-                                <!-- Dari & Diteruskan -->
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="dari" class="form-label">Dari</label>
-                                        <input type="text" class="form-control" id="dari" name="dari"
-                                            value="<?= htmlspecialchars($data['dari']) ?>" required>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label for="perihal" class="form-label">Perihal</label>
-                                        <input type="text" class="form-control" id="perihal" name="perihal"
-                                            value="<?= htmlspecialchars($data['perihal'] ?? '') ?>">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="diteruskan" class="form-label">Diteruskan Kepada</label>
-                                        <input type="text" class="form-control" id="diteruskan" name="diteruskan"
-                                            value="<?= htmlspecialchars($data['diteruskan'] ?? '') ?>">
-
-
-                                    </div>
-                                </div>
-
-                                <!-- Instruksi -->
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label for="instruksi" class="form-label">Instruksi</label>
-                                        <input type="text" class="form-control" id="instruksi" name="instruksi"
-                                            value="<?= htmlspecialchars($data['instruksi'] ?? '') ?>">
-                                    </div>
-                                </div>
-
-                                <!-- File Upload -->
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label class="form-label">File Lampiran</label>
+                                        <label for="dari" class="form-label fw-semibold">Asal Surat (Dari)</label>
+                                        <input type="text" class="form-control" id="dari" name="dari"
+                                            value="<?= htmlspecialchars($data['dari']) ?>" required>
+                                        <div class="invalid-feedback">
+                                            Harap isi asal surat
+                                        </div>
+                                    </div>
+                                </div>
 
+                                <!-- Section 2: Disposisi & Instruksi -->
+                                <div class="col-12 mt-4">
+                                    <div class="d-flex align-items-center gap-2 text-primary fw-bold small text-uppercase pb-1 border-bottom">
+                                        <i class="bi bi-card-text"></i> Disposisi & Instruksi
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="perihal" class="form-label fw-semibold">Perihal Surat</label>
+                                        <textarea class="form-control" id="perihal" name="perihal" rows="2"><?= htmlspecialchars($data['perihal'] ?? '') ?></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="diteruskan" class="form-label fw-semibold">Diteruskan Kepada</label>
+                                        <input type="text" class="form-control" id="diteruskan" name="diteruskan"
+                                            value="<?= htmlspecialchars($data['diteruskan'] ?? '') ?>" placeholder="Nama pejabat / divisi tujuan">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="instruksi" class="form-label fw-semibold">Instruksi / Catatan</label>
+                                        <input type="text" class="form-control" id="instruksi" name="instruksi"
+                                            value="<?= htmlspecialchars($data['instruksi'] ?? '') ?>" placeholder="Tindakan yang perlu diambil">
+                                    </div>
+                                </div>
+
+                                <!-- Section 3: Berkas Lampiran -->
+                                <div class="col-12 mt-4">
+                                    <div class="d-flex align-items-center gap-2 text-primary fw-bold small text-uppercase pb-1 border-bottom">
+                                        <i class="bi bi-paperclip"></i> Lampiran Berkas
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-group">
                                         <?php if (!empty($data['file_path']) && isValidFile($data['file_path'])): ?>
-                                            <div class="current-file mb-3">
-                                                <div class="d-flex align-items-center">
+                                            <div class="current-file mb-3 p-3 bg-light rounded border">
+                                                <div class="d-flex align-items-center justify-content-between">
                                                     <?php
                                                     $ext = strtolower(pathinfo($data['file_path'], PATHINFO_EXTENSION));
                                                     $file_url = getFileUrl($data['file_path']);
                                                     if ($ext == 'pdf') {
-                                                        echo "<i class='bi bi-file-earmark-pdf text-danger me-2 fs-2'></i>";
+                                                        echo "<div class='d-flex align-items-center gap-3'>";
+                                                        echo "<i class='bi bi-file-earmark-pdf text-danger fs-2'></i>";
                                                         echo "<div>";
-                                                        echo "<h6 class='mb-0'>File PDF Saat Ini</h6>";
-                                                        echo "<a href='{$file_url}' class='btn btn-sm btn-outline-primary mt-2' target='_blank'>
-                                                                <i class='bi bi-eye me-1'></i>Lihat PDF
+                                                        echo "<span class='badge bg-danger-subtle text-danger mb-1'>Format PDF</span>";
+                                                        echo "<p class='mb-0 fw-semibold text-truncate small' style='max-width:300px;'>" . htmlspecialchars(basename($data['file_path'])) . "</p>";
+                                                        echo "</div></div>";
+                                                        echo "<a href='{$file_url}' class='btn btn-sm btn-outline-primary' target='_blank'>
+                                                                <i class='bi bi-eye me-1'></i>Buka File
                                                               </a>";
-                                                        echo "</div>";
                                                     } elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
-                                                        echo "<div class='text-center'>";
-                                                        echo "<h6 class='mb-2'>File Gambar Saat Ini</h6>";
-                                                        echo "<img src='{$file_url}' class='img-thumbnail' style='max-height: 150px;' 
-                                                                onclick='showImagePreview(this.src)' style='cursor: pointer;'>";
-                                                        echo "</div>";
+                                                        echo "<div class='d-flex align-items-center gap-3'>";
+                                                        echo "<img src='{$file_url}' class='img-thumbnail' style='max-height: 70px;' onclick='showImagePreview(this.src)' style='cursor: pointer;'>";
+                                                        echo "<div>";
+                                                        echo "<span class='badge bg-primary-subtle text-primary mb-1'>Lampiran Gambar</span>";
+                                                        echo "<p class='mb-0 fw-semibold small'>" . htmlspecialchars(basename($data['file_path'])) . "</p>";
+                                                        echo "</div></div>";
+                                                        echo "<button type='button' class='btn btn-sm btn-outline-primary' onclick='showImagePreview(\"{$file_url}\")'>
+                                                                <i class='bi bi-zoom-in me-1'></i>Perbesar
+                                                              </button>";
                                                     }
                                                     ?>
                                                 </div>
@@ -352,8 +375,8 @@ if ($current_kategori_id <= 0 && !empty($data['kode'])) {
                                         <div class="file-upload">
                                             <label class="file-upload-label">
                                                 <i class="bi bi-cloud-arrow-up"></i>
-                                                <span class="d-block mt-2">Upload file baru (opsional)</span>
-                                                <small class="text-muted d-block mt-1">Format yang didukung: PDF, JPG, JPEG, PNG (Maks. 10MB)</small>
+                                                <span class="d-block mt-2 fw-medium">Upload file baru (opsional)</span>
+                                                <small class="text-muted d-block mt-1">Format didukung: PDF, JPG, JPEG, PNG (Maks. 10MB)</small>
                                                 <input type="file" id="file" name="file" accept=".pdf,.jpg,.jpeg,.png">
                                             </label>
                                         </div>
@@ -378,15 +401,13 @@ if ($current_kategori_id <= 0 && !empty($data['kode'])) {
                                 </div>
                             </div>
 
-                            <!-- Buttons -->
-                            <div class="d-flex justify-content-end gap-2 mt-4">
-                                <a href="disposisi.php" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left me-1"></i>
-                                    Kembali
+                            <!-- Action Buttons -->
+                            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                                <a href="disposisi.php" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar
                                 </a>
-                                <button type="submit" class="btn btn-warning">
-                                    <i class="bi bi-floppy me-1"></i>
-                                    Simpan Perubahan
+                                <button type="submit" class="btn btn-warning px-4">
+                                    <i class="bi bi-check-lg me-1"></i> Simpan Perubahan
                                 </button>
                             </div>
                         </form>
