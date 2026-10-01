@@ -4,18 +4,6 @@ require_once '../../includes/auth.php';
 check_login();
 $role = $_SESSION['user']['role'];
 
-function getFileUrl($file_path)
-{
-    // Check if it's a network path
-    if (strpos($file_path, 'DISPOSISI SURAT') !== false) {
-        // Convert network path to web-accessible URL
-        // Create a URL that points to a script that will serve the file
-        return 'serve_file.php?path=' . urlencode($file_path);
-    }
-    // Return original path for local files
-    return $file_path;
-}
-
 // Initialize pagination variables
 $rows_per_page = isset($_GET['rows']) ? (int)$_GET['rows'] : 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;

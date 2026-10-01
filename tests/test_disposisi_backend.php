@@ -134,4 +134,16 @@ $disp_k_content = file_get_contents($base_dir . '/public/disposisi/disposisi_kel
 assert(strpos($disp_k_content, "(\$role === 'sekre' || \$role === 'ti_admin')") !== false, 'disposisi_keluar.php header buttons must allow ti_admin');
 echo "PASS: Role harmonization verified across all disposisi mutation handlers and view actions.\n";
 
-echo "ALL DISPOSISI TESTS (CATEGORY, EXPORT SEARCH, AUTO RENUMBER, ROLE HARMONIZATION) PASSED (100%)\n";
+// 11. Test Standardized Dynamic getFileUrl Resolver
+assert(getFileUrl('') === '', 'Empty path URL must be empty string');
+$unc_url = getFileUrl('\\\\172.16.34.5\\ftp\\DISPOSISI SURAT\\test.pdf');
+assert(str_contains($unc_url, 'serve_file.php?path='), 'UNC path must resolve to serve_file.php');
+
+$custom_url = getFileUrl('D:\\custom_storage\\agenda_surat_2026.pdf');
+assert(str_contains($custom_url, 'serve_file.php?path='), 'Non-standard path must safely resolve to serve_file.php without depending on hardcoded DISPOSISI SURAT substring');
+
+assert(strpos($disp_content, 'function getFileUrl') === false, 'disposisi.php must not have duplicate local getFileUrl');
+assert(strpos($disp_k_content, 'function getFileUrl') === false, 'disposisi_keluar.php must not have duplicate local getFileUrl');
+echo "PASS: Standardized dynamic getFileUrl resolver verified.\n";
+
+echo "ALL DISPOSISI TESTS (CATEGORY, EXPORT SEARCH, AUTO RENUMBER, ROLE HARMONIZATION, DYNAMIC FILE URL) PASSED (100%)\n";
