@@ -88,6 +88,15 @@ try {
         }
     }
 
+    // Add search filter
+    if (isset($_GET['search']) && trim($_GET['search']) !== '') {
+        $search = '%' . trim($_GET['search']) . '%';
+        $where_conditions[] = "(nomor_surat LIKE ? OR perihal LIKE ? OR ke LIKE ?)";
+        $params[] = $search;
+        $params[] = $search;
+        $params[] = $search;
+    }
+
     // Add WHERE clause if conditions exist
     if (!empty($where_conditions)) {
         $query .= " WHERE " . implode(" AND ", $where_conditions);

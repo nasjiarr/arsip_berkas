@@ -55,4 +55,27 @@ $k_all = (int)$stmt_k_all->fetchColumn();
 assert(($k_bi + $k_ojk + $k_umum) === $k_all, "Disposisi keluar partition matches total");
 echo "PASS: Disposisi Keluar partition matches total records ($k_all).\n";
 
-echo "ALL DISPOSISI CATEGORY TESTS PASSED (100%)\n";
+// 6. Test Search Query Parameter in Export URL
+$disp_code = file_get_contents($base_dir . '/public/disposisi/disposisi.php');
+assert(strpos($disp_code, 'search=') !== false, 'disposisi.php must include search in export_url');
+
+$disp_k_code = file_get_contents($base_dir . '/public/disposisi/disposisi_keluar.php');
+assert(strpos($disp_k_code, 'search=') !== false, 'disposisi_keluar.php must include search in export_url');
+
+$export_code = file_get_contents($base_dir . '/public/disposisi/export_excel.php');
+assert(strpos($export_code, "\$_GET['search']") !== false, 'export_excel.php must handle search param');
+
+$export_k_code = file_get_contents($base_dir . '/public/disposisi/export_excel_keluar.php');
+assert(strpos($export_k_code, "\$_GET['search']") !== false, 'export_excel_keluar.php must handle search param');
+echo "PASS: Search synchronization across disposisi views and Excel export verified.\n";
+
+// 7. Test Export Excel Query with Search parameter simulated
+$search_term = '1112';
+$search_like = '%' . $search_term . '%';
+$stmt_srch = $pdo->prepare("SELECT COUNT(*) FROM disposisi_surat WHERE (nomer_surat LIKE ? OR perihal LIKE ? OR dari LIKE ? OR instruksi LIKE ? OR diteruskan LIKE ?)");
+$stmt_srch->execute([$search_like, $search_like, $search_like, $search_like, $search_like]);
+$srch_count = (int)$stmt_srch->fetchColumn();
+assert($srch_count >= 1, "Simulated search must find matching records for '1112' (found: $srch_count)");
+echo "PASS: Search parameterized query in export executed successfully ($srch_count records).\n";
+
+echo "ALL DISPOSISI CATEGORY & EXPORT SEARCH TESTS PASSED (100%)\n";

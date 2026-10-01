@@ -93,6 +93,7 @@ try {
     if (!empty($selected_bulan)) $filter_params[] = "bulan=" . $selected_bulan;
     if (!empty($selected_tahun)) $filter_params[] = "tahun=" . $selected_tahun;
     if (!empty($selected_kategori)) $filter_params[] = "kategori=" . urlencode($selected_kategori);
+    if (!empty($search_query)) $filter_params[] = "search=" . urlencode($search_query);
     if (!empty($filter_params)) {
         $export_url .= "?" . implode("&", $filter_params);
     }
