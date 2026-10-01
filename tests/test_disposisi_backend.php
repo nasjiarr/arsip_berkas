@@ -78,4 +78,35 @@ $srch_count = (int)$stmt_srch->fetchColumn();
 assert($srch_count >= 1, "Simulated search must find matching records for '1112' (found: $srch_count)");
 echo "PASS: Search parameterized query in export executed successfully ($srch_count records).\n";
 
-echo "ALL DISPOSISI CATEGORY & EXPORT SEARCH TESTS PASSED (100%)\n";
+// 8. Test Automatic Sequence Renumbering upon Delete
+$del_code = file_get_contents($base_dir . '/public/disposisi/delete_disposisi.php');
+assert(strpos($del_code, "updateNomorUrut(\$pdo, 'disposisi_surat')") !== false, 'delete_disposisi must call updateNomorUrut');
+
+$del_k_code = file_get_contents($base_dir . '/public/disposisi/delete_disposisi_keluar.php');
+assert(strpos($del_k_code, "updateNomorUrut(\$pdo, 'disposisi_keluar')") !== false, 'delete_disposisi_keluar must call updateNomorUrut');
+echo "PASS: delete handlers include updateNomorUrut calls.\n";
+
+// 9. Functional verification of renumbering in transaction
+require_once $base_dir . '/public/disposisi/update_nomor.php';
+$pdo->beginTransaction();
+// Insert dummy record to create gap
+$stmt_dummy = $pdo->prepare("INSERT INTO disposisi_surat (no, kode, kategori_id, tanggal_surat, tanggal_masuk, nomer_surat, dari, perihal, instruksi, diteruskan)
+                             VALUES (999, '001', 1, '2026-01-01', '2026-01-01', 'TEST/GAP', 'Tester', 'Gap Test', 'None', 'None')");
+$stmt_dummy->execute();
+$dummy_id = $pdo->lastInsertId();
+
+// Run updateNomorUrut
+$renumber_ok = updateNomorUrut($pdo, 'disposisi_surat');
+assert($renumber_ok === true, 'updateNomorUrut must execute without errors');
+
+// Verify numbers are strictly consecutive 1..N
+$rows = $pdo->query("SELECT no FROM disposisi_surat ORDER BY no ASC")->fetchAll(PDO::FETCH_COLUMN);
+$expected = 1;
+foreach ($rows as $no_val) {
+    assert((int)$no_val === $expected, "Agenda number must be consecutive without gaps (expected: $expected, got: $no_val)");
+    $expected++;
+}
+$pdo->rollBack();
+echo "PASS: Transactional sequence gap closure verified (strictly consecutive 1..N).\n";
+
+echo "ALL DISPOSISI TESTS (CATEGORY, EXPORT SEARCH, AUTO RENUMBER) PASSED (100%)\n";

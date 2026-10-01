@@ -2,6 +2,7 @@
 // ponytail: CSRF-guarded POST deletion for disposisi keluar.
 require_once '../../includes/config.php';
 require_once '../../includes/auth.php';
+require_once 'update_nomor.php';
 
 check_login();
 
@@ -28,6 +29,8 @@ if ($id <= 0) {
 }
 
 try {
+    $pdo->beginTransaction();
+
     // Get the file path before deleting the record
     $query = "SELECT file_path FROM disposisi_keluar WHERE id = :id";
     $stmt = $pdo->prepare($query);
@@ -39,18 +42,28 @@ try {
     $delete_query = "DELETE FROM disposisi_keluar WHERE id = :id";
     $stmt = $pdo->prepare($delete_query);
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
 
-    if ($stmt->execute()) {
-        if ($result && !empty($result['file_path']) && file_exists($result['file_path'])) {
-            @unlink($result['file_path']);
-        }
+    // Re-sequence agenda numbers sequentially without gaps
+    updateNomorUrut($pdo, 'disposisi_keluar');
 
-        set_flash_message('success', 'Data disposisi keluar berhasil dihapus.');
-    } else {
-        set_flash_message('danger', 'Gagal menghapus data.');
+    $pdo->commit();
+
+    if ($result && !empty($result['file_path']) && file_exists($result['file_path'])) {
+        @unlink($result['file_path']);
     }
+
+    set_flash_message('success', 'Data disposisi keluar berhasil dihapus.');
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     set_flash_message('danger', 'Terjadi kesalahan saat menghapus data.');
+} catch (Exception $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    set_flash_message('danger', 'Terjadi kesalahan saat menghapus file.');
 }
 
 header("Location: disposisi_keluar.php");
